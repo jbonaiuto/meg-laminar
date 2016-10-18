@@ -11,7 +11,7 @@ function [num_diode_onsets num_dots_evts num_instr_evts num_resp_evts]=adjust_ru
 % 
 
 % Parse inputs
-defaults = struct('plot_diode',false,'output_file','','output_format','png','delete_last_resp',false,'delete_no_resp',false);  %define default values
+defaults = struct('data_dir','/data/pred_coding','plot_diode',false,'output_file','','output_format','png','delete_last_resp',false,'delete_no_resp',false);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -20,7 +20,7 @@ for f = fieldnames(defaults)',
 end
 
 % File containing data
-analysis_dir=fullfile('/data','pred_coding','analysis',subj_info.subj_id,num2str(session_num));
+analysis_dir=fullfile(params.data_dir,'analysis',subj_info.subj_id,num2str(session_num));
 spm_file_name=fullfile(analysis_dir, sprintf('%s-%d-%d.mat',subj_info.subj_id,session_num,run_num));
 
 % Adjust event timings
