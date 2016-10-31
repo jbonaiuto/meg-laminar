@@ -18,7 +18,7 @@ all_tpl = set(all_tpl,'block','all','subject','subjects');
 all_tpl = set(all_tpl, 'var', {'PAGETITLE','ZEROEVENT','WOI'}, {['ERP: All subjects: ' zero_event], zero_event, [erp_type num2str(woi(1)) '-' num2str(woi(2)) 'ms']});
 
 % Directory to put report
-report_dir=fullfile('/data','pred_coding','analysis','erp');
+report_dir=fullfile(params.data_dir,'analysis','erp');
 %delete(fullfile(report_dir,'*'));
 if exist(report_dir,'dir')~=7
     mkdir(report_dir);
