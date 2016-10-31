@@ -434,10 +434,23 @@ end
 tpl = set(tpl,'var',{'RESPBADCHANNELS','RESPBADTRIALS'},{strjoin(removed_channels, ', '),strjoin(removed_trials, ', ')});
 
 
-spm_jobman('initcfg'); 
 clear jobs
 matlabbatch={};
 batch_idx=1;
+
+% Remove prefiltered files
+matlabbatch{batch_idx}.spm.meeg.other.delete.D = {fullfile(analysis_dir, sprintf('cresp_Tafdf%d.mat', session_num))};
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.meeg.other.delete.D = {fullfile(analysis_dir, sprintf('cinstr_Tafdf%d.mat', session_num))};
+batch_idx=batch_idx+1;
+
+% Remove run epoched files1
+matlabbatch{batch_idx}.spm.meeg.other.delete.D = instr_run_files;
+batch_idx=batch_idx+1;
+    
+matlabbatch{batch_idx}.spm.meeg.other.delete.D = resp_run_files;
+batch_idx=batch_idx+1;
 
 % Average
 matlabbatch{batch_idx}.spm.meeg.averaging.average.D = {fullfile(analysis_dir, sprintf('rcinstr_Tafdf%d.mat', session_num))};
