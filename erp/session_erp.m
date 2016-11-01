@@ -1,4 +1,4 @@
-function [cond_erps trial_times session_tpl_text]=session_erp(subj_info, session_num, zero_event, woi, erp_type, varargin)
+function [cond_erps trial_times session_tpl_text]=session_erp(subj_info, session_num, label, zero_event, woi, erp_type, varargin)
 
 defaults = struct('data_dir', '/data/pred_coding', ...
     'url_prefix', 'http://fortressofjollitude.zapto.org/', 'time_limits',[]);  %define default values
@@ -69,7 +69,7 @@ end
 
 [ZI,f]=spm_eeg_plotScalpData(vals,ch_pos,ch_labels);
 %set(gca,'clim',[0 1]);
-img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[zero_event '_channel.png']);
+img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[label '_channel.png']);
 saveas(gcf, fullfile(params.data_dir,img_path));
 close(gcf);
 session_tpl = set(session_tpl,'var',{'CHANMAP'},{[params.url_prefix img_path]});
@@ -100,19 +100,19 @@ end
 
 trial_times=session_data.time([],'ms');
 
-img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[zero_event '_all.png']);
+img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[label '_all.png']);
 plot_erp(trial_times, cond_erps, {'all'}, 'time_limits', params.time_limits, 'output_file', fullfile(params.data_dir,img_path));
 session_tpl = set(session_tpl,'var',{'ALLSRC'},{[params.url_prefix img_path]});
 
-img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[zero_event '_coherence.png']);
+img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[label '_coherence.png']);
 plot_erp(trial_times, cond_erps, coherence_conditions, 'time_limits', params.time_limits, 'output_file', fullfile(params.data_dir,img_path));
 session_tpl = set(session_tpl,'var',{'COHERENCESRC'},{[params.url_prefix img_path]});
 
-img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[zero_event '_congruence.png']);
+img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[label '_congruence.png']);
 plot_erp(trial_times, cond_erps, congruence_conditions,'time_limits', params.time_limits, 'output_file', fullfile(params.data_dir,img_path));
 session_tpl = set(session_tpl,'var',{'CONGRUENCESRC'},{[params.url_prefix img_path]});
 
-img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[zero_event '_congruence_coherence.png']);
+img_path=fullfile('analysis',subj_info.subj_id,num2str(session_num), 'erp',[label '_congruence_coherence.png']);
 plot_erp(trial_times, cond_erps, conditions, 'time_limits', params.time_limits, 'output_file', fullfile(params.data_dir,img_path));
 session_tpl = set(session_tpl,'var',{'CONGRUENCECOHERENCESRC'},{[params.url_prefix img_path]});
 
