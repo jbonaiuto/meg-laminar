@@ -11,11 +11,16 @@ for f = fieldnames(defaults)',
     end
 end
 
+spm('defaults', 'EEG');
+spm_jobman('initcfg');
+
 conditions={'congruent-low','congruent-med','congruent-high',...
     'incongruent-low','incongruent-med','incongruent-high'};
 
 % Run TF decomposition
 if params.run_tf
+    spm_jobman('initcfg');
+    clear jobs;
     preprocessed_filename=fullfile(params.data_dir, 'analysis', ...
         subj_info.subj_id, num2str(session_num), ...
         ['rc' zero_event '_Tafdf' num2str(session_num) '.mat']);
@@ -26,12 +31,13 @@ if params.run_tf
     inputs{3,1}=woi;
     inputs{4,1}=woi;
     inputs{5,1}=woi;
-    spm('defaults', 'EEG');
     spm_jobman('run', jobfile, inputs{:});
 end
 
 % Smooth resulting images
 if params.run_smooth
+    spm_jobman('initcfg');
+    clear jobs;
     smooth_files={};
     for cond_idx=1:length(conditions)
         img_path=fullfile(params.data_dir, 'analysis', ...
@@ -62,13 +68,14 @@ if params.run_smooth
     jobfile = 'smooth_job.m';
     inputs = {};
     inputs{1,1}=smooth_files;
-    spm('defaults', 'EEG');
     spm_jobman('run', jobfile, inputs{:});
 end
 
 if params.run_stats
+    cd D:\pred_coding\src\matlab\analysis\sensor_tf
+    spm_jobman('initcfg');
+    clear jobs;    
     jobfile = 'factorial_job.m';
-    
     % Scalp x freq
     inputs={};
     inputs{1,1}={fullfile(params.data_dir, 'analysis', ...
@@ -89,10 +96,12 @@ if params.run_stats
     inputs{8,1}=3;
     inputs{9,1}=3;
     inputs{10,1}=3;
-    spm('defaults', 'EEG');
     spm_jobman('run', jobfile, inputs{:});
     
     % Scalp x time
+    cd D:\pred_coding\src\matlab\analysis\sensor_tf
+    spm_jobman('initcfg');
+    clear jobs;    
     inputs={};
     inputs{1,1}={fullfile(params.data_dir, 'analysis', ...
             subj_info.subj_id, num2str(session_num), ...
@@ -112,10 +121,12 @@ if params.run_stats
     inputs{8,1}=2;
     inputs{9,1}=2;
     inputs{10,1}=2;
-    spm('defaults', 'EEG');
     spm_jobman('run', jobfile, inputs{:});
     
     % Time x frequency
+    cd D:\pred_coding\src\matlab\analysis\sensor_tf
+    spm_jobman('initcfg');
+    clear jobs;    
     inputs={};
     inputs{1,1}={fullfile(params.data_dir, 'analysis', ...
             subj_info.subj_id, num2str(session_num), ...
@@ -135,6 +146,7 @@ if params.run_stats
     inputs{8,1}=4;
     inputs{9,1}=4;
     inputs{10,1}=4;
-    spm('defaults', 'EEG');
     spm_jobman('run', jobfile, inputs{:});
+    
+    cd D:\pred_coding\src\matlab\analysis\sensor_tf
 end
