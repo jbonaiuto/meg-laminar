@@ -180,22 +180,26 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.prefix = 'eyeblink';
         batch_idx=batch_idx+1;
 
-        matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.D = {fullfile(analysis_dir, sprintf('eyeblinkafdf%s',spm_filename))};
-        matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.timewin = [-Inf Inf];
-        matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.threshold = NaN;
-        matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.ncomp = 4;
-        batch_idx=batch_idx+1;
+        if ~length(subj_info.blink_ncomps)
+            matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.D = {fullfile(analysis_dir, sprintf('eyeblinkafdf%s',spm_filename))};
+            matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.timewin = [-Inf Inf];
+            matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.threshold = NaN;
+            matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.ncomp = 4;
+            batch_idx=batch_idx+1;
 
-        spm_jobman('run',matlabbatch);
+            spm_jobman('run',matlabbatch);
 
-        clear jobs
-        matlabbatch={};
-        batch_idx=1;
+            clear jobs
+            matlabbatch={};
+            batch_idx=1;
 
-        ncomp=input('Number of components: ');
-        matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.D = {fullfile(analysis_dir, sprintf('eyeblinkafdf%s',spm_filename))};
-        matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.clear=1;
-        batch_idx=batch_idx+1;
+            ncomp=input('Number of components: ');
+            matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.D = {fullfile(analysis_dir, sprintf('eyeblinkafdf%s',spm_filename))};
+            matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.clear=1;
+            batch_idx=batch_idx+1;
+        else
+            ncomp=subj_info.blink_ncomps(session_num,run_num);
+        end
 
         matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.D = {fullfile(analysis_dir, sprintf('eyeblinkafdf%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.preproc.sconfounds.mode{1}.svd.timewin = [-Inf Inf];
