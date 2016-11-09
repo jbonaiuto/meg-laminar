@@ -1,5 +1,5 @@
 % resp woi=[-1500 1500], baseline=[-1500 -1000]
-% instr woi=[-3000 1000], baseline=[-3000 -2500]
+% instr woi=[-3000 500], baseline=[-3000 -2500]
 function session_sensor_tf(subj_info, session_num, zero_event, woi, baseline, varargin)
 
 defaults = struct('data_dir', '/data/pred_coding', 'run_tf', true, ...
