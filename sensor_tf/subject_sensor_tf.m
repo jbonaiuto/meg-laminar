@@ -29,7 +29,6 @@ batch_idx=1;
 matlabbatch{batch_idx}.spm.stats.factorial_design.dir = {fullfile(params.data_dir, 'analysis', ...
     subj_info.subj_id, [type '_rtf_rc' zero_event '_Tafdf'])};
 
-% Scalp x freq
 for session_num=1:length(subj_info.sessions)
     matlabbatch{batch_idx}.spm.stats.factorial_design.des.anovaw.fsubject(session_num).scans = {};
 
