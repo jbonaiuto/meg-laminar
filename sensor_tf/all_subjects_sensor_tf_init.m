@@ -15,7 +15,7 @@ conditions={'congruent-low','congruent-med','congruent-high',...
     'incongruent-low','incongruent-med','incongruent-high'};
 
 run_analysis('scalp_freq',3);
-run_analysis('scalp_time',2);
+%run_analysis('scalp_time',2);
 run_analysis('time_freq',4);
 
 function run_analysis(type, units)
@@ -76,19 +76,60 @@ matlabbatch{batch_idx}.spm.stats.con.consess{1}.fcon.sessrep = 'none';
 matlabbatch{batch_idx}.spm.stats.con.delete = 1;
 batch_idx=batch_idx+1;
 
-matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
-matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
-matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
-matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
-matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
-matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
-matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
-matlabbatch{batch_idx}.spm.stats.results.units = units;
-matlabbatch{batch_idx}.spm.stats.results.print = 'png';
-matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
-batch_idx=batch_idx+1;
+% matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+% matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
+% matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
+% matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
+% matlabbatch{batch_idx}.spm.stats.results.units = units;
+% matlabbatch{batch_idx}.spm.stats.results.print = 'png';
+% matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
+% batch_idx=batch_idx+1;
 
 spm_jobman('run', matlabbatch);
+
+V=spm_vol(fullfile(analysis_dir, 'spmF_0001.nii'));
+FMap = spm_read_vols(V);
+dof1=2;
+dof2=length(subjects)*2-2;
+fthresh = finv(.95,dof1,dof2);  % This is the corresponding t-threshold I'll need to extract all voxels whose value is greater than this.
+max_dim=max(V.dim);
+
+if units==4
+    coords=V.mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';
+
+    f=figure();
+    imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),FMap);
+    set(gca,'clim',[fthresh max(FMap(:))]);
+    set(gca,'ydir','normal');
+    hold on;
+    plot([0 0],[coords(1,1) coords(1,end)],'w--')
+    ylabel('Frequency (Hz)');
+    xlabel('Time (ms)');
+    colorbar();
+    saveas(f,fullfile(analysis_dir,'f_test.png'));
+elseif units==3
+    coords=V.mat*[[1:max_dim]' [1:max_dim]' [1:max_dim]' ones(max_dim,1)]';
+    
+    freq_bands=[15 35;60 90];
+    band_names={'beta','gamma'};
+    
+    for i=1:size(freq_bands,1)
+        f=figure();
+        freq_idx=intersect(find(coords(3,:)>=freq_bands(i,1)),find(coords(3,:)<=freq_bands(i,2)));
+        fFMap=squeeze(mean(abs(FMap(:,:,freq_idx)),3));
+        imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),fFMap);
+        set(gca,'clim',[fthresh+1 max([fthresh,max(fFMap(:))])]);
+        %set(gca,'ydir','normal');
+        title(sprintf('%d-%dHz',freq_bands(i,1),freq_bands(i,2)));
+        xlabel('Posterior - Anterior');
+        ylabel('Right - Left');
+        colorbar();
+        saveas(f,fullfile(analysis_dir,sprintf('f_test_%s.png',band_names{i})));
+    end
+end
 
 clear jobs;    
 matlabbatch={};
@@ -126,19 +167,57 @@ matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
 matlabbatch{batch_idx}.spm.stats.con.delete = 1;
 batch_idx=batch_idx+1;
 
-matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
-matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
-matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
-matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
-matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
-matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
-matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
-matlabbatch{batch_idx}.spm.stats.results.units = units;
-matlabbatch{batch_idx}.spm.stats.results.print = 'png';
-matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
-batch_idx=batch_idx+1;
+% matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+% matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
+% matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
+% matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
+% matlabbatch{batch_idx}.spm.stats.results.units = units;
+% matlabbatch{batch_idx}.spm.stats.results.print = 'png';
+% matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
+% batch_idx=batch_idx+1;
 
 spm_jobman('run', matlabbatch);
+
+V=spm_vol(fullfile(analysis_dir, 'spmT_0001.nii'));
+TMap = spm_read_vols(V);
+dof=length(subjects)-1;
+tthresh = tinv(.95,dof);  % This is the corresponding t-threshold I'll need to extract all voxels whose value is greater than this.
+max_dim=max(V.dim);
+    
+if units==4    
+    f=figure();
+    coords=V.mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';
+    imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),TMap);
+    set(gca,'clim',[tthresh max(TMap(:))]);
+    set(gca,'ydir','normal');
+    hold on;
+    plot([0 0],[coords(1,1) coords(1,end)],'w--')
+    ylabel('Frequency (Hz)');
+    xlabel('Time (ms)');
+    colorbar();
+    saveas(f,fullfile(analysis_dir,'t_test_positive.png'));
+elseif units==3
+    freq_bands=[15 35;60 90];
+    band_names={'beta','gamma'};    
+    
+    for i=1:size(freq_bands,1)
+        f=figure();
+        coords=V.mat*[[1:max_dim]' [1:max_dim]' [1:max_dim]' ones(max_dim,1)]';
+        freq_idx=intersect(find(coords(3,:)>=freq_bands(i,1)),find(coords(3,:)<=freq_bands(i,2)));
+        fTMap=squeeze(mean(abs(TMap(:,:,freq_idx)),3));
+        imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),fTMap);
+        set(gca,'clim',[tthresh max([tthresh+1,max(fTMap(:))])]);
+        %set(gca,'ydir','normal');
+        title(sprintf('%d-%dHz',freq_bands(i,1),freq_bands(i,2)));
+        xlabel('Posterior - Anterior');
+        ylabel('Right - Left');
+        colorbar();
+        saveas(f,fullfile(analysis_dir,sprintf('t_test_positive_%s.png',band_names{i})));
+    end
+end
 
 clear jobs;    
 matlabbatch={};
@@ -176,19 +255,56 @@ matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
 matlabbatch{batch_idx}.spm.stats.con.delete = 1;
 batch_idx=batch_idx+1;
 
-matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
-matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
-matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
-matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
-matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
-matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
-matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
-matlabbatch{batch_idx}.spm.stats.results.units = units;
-matlabbatch{batch_idx}.spm.stats.results.print = 'png';
-matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
-batch_idx=batch_idx+1;
+% matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+% matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
+% matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
+% matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
+% matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
+% matlabbatch{batch_idx}.spm.stats.results.units = units;
+% matlabbatch{batch_idx}.spm.stats.results.print = 'png';
+% matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
+% batch_idx=batch_idx+1;
 
 spm_jobman('run', matlabbatch);
+
+V=spm_vol(fullfile(analysis_dir, 'spmT_0001.nii'));
+TMap = spm_read_vols(V);
+dof=length(subjects)-1;
+tthresh = tinv(.95,dof);  % This is the corresponding t-threshold I'll need to extract all voxels whose value is greater than this.
+max_dim=max(V.dim);
+if units==4
+    f=figure();
+    coords=V.mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';
+    imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),TMap);
+    set(gca,'clim',[tthresh max(TMap(:))]);
+    set(gca,'ydir','normal');
+    hold on;
+    plot([0 0],[coords(1,1) coords(1,end)],'w--')
+    ylabel('Frequency (Hz)');
+    xlabel('Time (ms)');
+    colorbar();
+    saveas(f,fullfile(analysis_dir,'t_test_negative.png'));
+elseif units==3
+    freq_bands=[15 35;60 90];
+    band_names={'beta','gamma'};
+    
+    for i=1:size(freq_bands,1)
+        f=figure();
+        coords=V.mat*[[1:max_dim]' [1:max_dim]' [1:max_dim]' ones(max_dim,1)]';
+        freq_idx=intersect(find(coords(3,:)>=freq_bands(i,1)),find(coords(3,:)<=freq_bands(i,2)));
+        fTMap=squeeze(mean(abs(TMap(:,:,freq_idx)),3));
+        imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),fTMap);
+        set(gca,'clim',[tthresh max([tthresh+1,max(fTMap(:))])]);
+        %set(gca,'ydir','normal');
+        title(sprintf('%d-%dHz',freq_bands(i,1),freq_bands(i,2)));
+        xlabel('Posterior - Anterior');
+        ylabel('Right - Left');
+        colorbar();
+        saveas(f,fullfile(analysis_dir,sprintf('t_test_negative_%s.png',band_names{i})));
+    end
+end
 
 cd(curr_dir);
 end
