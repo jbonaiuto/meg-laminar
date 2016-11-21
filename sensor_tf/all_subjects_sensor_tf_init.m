@@ -11,6 +11,10 @@ end
 spm('defaults', 'EEG');
 spm_jobman('initcfg');
 
+for subj_idx=1:length(subjects)
+    plot_subject_init(subjects(subj_idx),zero_event,'data_dir',params.data_dir);
+end
+
 conditions={'congruent-low','congruent-med','congruent-high',...
     'incongruent-low','incongruent-med','incongruent-high'};
 
