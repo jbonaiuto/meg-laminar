@@ -99,13 +99,18 @@ max_dim=max(V.dim);
 
 if units==4
     coords=V.mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';
-
+    if strcmp(zero_event,'dots')
+        coords(2,:)=coords(2,:)+2500;
+    end
     f=figure();
     imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),FMap);
     set(gca,'clim',[fthresh max(FMap(:))]);
     set(gca,'ydir','normal');
     hold on;
     plot([0 0],[coords(1,1) coords(1,end)],'w--')
+    if strcmp(zero_event,'instr')
+        plot([-2500 -2500],[coords(1,1) coords(1,end)],'w--')
+    end
     ylabel('Frequency (Hz)');
     xlabel('Time (ms)');
     colorbar();
@@ -188,13 +193,19 @@ tthresh = tinv(.95,dof);  % This is the corresponding t-threshold I'll need to e
 max_dim=max(V.dim);
     
 if units==4    
-    f=figure();
     coords=V.mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';
+    if strcmp(zero_event,'dots')
+        coords(2,:)=coords(2,:)+2500;
+    end
+    f=figure();
     imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),TMap);
     set(gca,'clim',[tthresh max(TMap(:))]);
     set(gca,'ydir','normal');
     hold on;
     plot([0 0],[coords(1,1) coords(1,end)],'w--')
+    if strcmp(zero_event,'instr')
+        plot([-2500 -2500],[coords(1,1) coords(1,end)],'w--')
+    end
     ylabel('Frequency (Hz)');
     xlabel('Time (ms)');
     colorbar();
@@ -277,11 +288,17 @@ max_dim=max(V.dim);
 if units==4
     f=figure();
     coords=V.mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';
+    if strcmp(zero_event,'dots')
+        coords(2,:)=coords(2,:)+2500;
+    end
     imagesc(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),TMap);
     set(gca,'clim',[tthresh max(TMap(:))]);
     set(gca,'ydir','normal');
     hold on;
     plot([0 0],[coords(1,1) coords(1,end)],'w--')
+    if strcmp(zero_event,'instr')
+        plot([-2500 -2500],[coords(1,1) coords(1,end)],'w--')
+    end
     ylabel('Frequency (Hz)');
     xlabel('Time (ms)');
     colorbar();
