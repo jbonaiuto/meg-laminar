@@ -25,11 +25,10 @@ clear jobs;
 matlabbatch={};
 batch_idx=1;
 
-delete(fullfile(params.data_dir, 'analysis', ...
-        [type '_rtf_rc' zero_event '_Tafdf'],'*'));
+analysis_dir=fullfile(params.data_dir, 'analysis', [type '_rtf_rc' zero_event '_Tafdf']);
+delete(fullfile(analysis_dir,'*'));
 
-matlabbatch{batch_idx}.spm.stats.factorial_design.dir = {fullfile(params.data_dir, 'analysis', ...
-        [type '_rtf_rc' zero_event '_Tafdf'])};
+matlabbatch{batch_idx}.spm.stats.factorial_design.dir = {analysis_dir};
 matlabbatch{batch_idx}.spm.stats.factorial_design.des.fd.fact(1).name = 'direction';
 matlabbatch{batch_idx}.spm.stats.factorial_design.des.fd.fact(1).levels = 2;
 matlabbatch{batch_idx}.spm.stats.factorial_design.des.fd.fact(1).dept = 0;
@@ -65,28 +64,119 @@ matlabbatch{batch_idx}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
 matlabbatch{batch_idx}.spm.stats.factorial_design.globalm.glonorm = 1;
 batch_idx=batch_idx+1;
 
-matlabbatch{batch_idx}.spm.stats.fmri_est.spmmat(1) = {fullfile(params.data_dir, 'analysis', ...
-    [type '_rtf_rc' zero_event '_Tafdf'],'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.fmri_est.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
 matlabbatch{batch_idx}.spm.stats.fmri_est.write_residuals = 0;
 matlabbatch{batch_idx}.spm.stats.fmri_est.method.Classical = 1;
 batch_idx=batch_idx+1;
 
-matlabbatch{batch_idx}.spm.stats.con.spmmat(1) = {fullfile(params.data_dir, 'analysis', ...
-    [type '_rtf_rc' zero_event '_Tafdf'],'SPM.mat')};
-matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.name = 'positive';
-matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.weights = [1 -1];
-matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-matlabbatch{batch_idx}.spm.stats.con.consess{2}.tcon.name = 'negative';
-matlabbatch{batch_idx}.spm.stats.con.consess{2}.tcon.weights = [-1 1];
-matlabbatch{batch_idx}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-matlabbatch{batch_idx}.spm.stats.con.consess{3}.fcon.name = 'average';
-matlabbatch{batch_idx}.spm.stats.con.consess{3}.fcon.weights = [1 0;0 1];
-matlabbatch{batch_idx}.spm.stats.con.consess{3}.fcon.sessrep = 'none';
+matlabbatch{batch_idx}.spm.stats.con.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.fcon.name = 'average';
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.fcon.weights = [1 0;0 1];
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.fcon.sessrep = 'none';
 matlabbatch{batch_idx}.spm.stats.con.delete = 1;
 batch_idx=batch_idx+1;
 
-matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(params.data_dir, 'analysis', ...
-    [type '_rtf_rc' zero_event '_Tafdf'],'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
+matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
+matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
+matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
+matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
+matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
+matlabbatch{batch_idx}.spm.stats.results.units = units;
+matlabbatch{batch_idx}.spm.stats.results.print = 'png';
+matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
+batch_idx=batch_idx+1;
+
+spm_jobman('run', matlabbatch);
+
+clear jobs;    
+matlabbatch={};
+batch_idx=1;
+
+analysis_dir=fullfile(params.data_dir, 'analysis', [type '_rtf_rc' zero_event '_Tafdf_positive']);
+delete(fullfile(analysis_dir,'*'));
+
+matlabbatch{batch_idx}.spm.stats.factorial_design.dir = {analysis_dir};
+matlabbatch{batch_idx}.spm.stats.factorial_design.des.t1.scans = {};
+for subj_idx=1:length(subjects)
+    subj_info=subjects(subj_idx);
+    matlabbatch{batch_idx}.spm.stats.factorial_design.des.t1.scans{end+1,1}=fullfile(params.data_dir, 'analysis', ...
+        subj_info.subj_id, [type '_rtf_rc' zero_event '_Tafdf'],'con_0001.nii,1');
+end
+matlabbatch{batch_idx}.spm.stats.factorial_design.cov = struct('c', {}, 'cname', {}, 'iCFI', {}, 'iCC', {});
+matlabbatch{batch_idx}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
+matlabbatch{batch_idx}.spm.stats.factorial_design.masking.tm.tm_none = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.masking.im = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.masking.em = {''};
+matlabbatch{batch_idx}.spm.stats.factorial_design.globalc.g_omit = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.globalm.glonorm = 1;
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.stats.fmri_est.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.fmri_est.write_residuals = 0;
+matlabbatch{batch_idx}.spm.stats.fmri_est.method.Classical = 1;
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.stats.con.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.name = 'positive';
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.weights = 1;
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+matlabbatch{batch_idx}.spm.stats.con.delete = 1;
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
+matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
+matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
+matlabbatch{batch_idx}.spm.stats.results.conspec.thresh = 0.05;
+matlabbatch{batch_idx}.spm.stats.results.conspec.extent = 0;
+matlabbatch{batch_idx}.spm.stats.results.conspec.mask.none = 1;
+matlabbatch{batch_idx}.spm.stats.results.units = units;
+matlabbatch{batch_idx}.spm.stats.results.print = 'png';
+matlabbatch{batch_idx}.spm.stats.results.write.none = 1;
+batch_idx=batch_idx+1;
+
+spm_jobman('run', matlabbatch);
+
+clear jobs;    
+matlabbatch={};
+batch_idx=1;
+
+analysis_dir=fullfile(params.data_dir, 'analysis', [type '_rtf_rc' zero_event '_Tafdf_negative']);
+delete(fullfile(analysis_dir,'*'));
+
+matlabbatch{batch_idx}.spm.stats.factorial_design.dir = {analysis_dir};
+matlabbatch{batch_idx}.spm.stats.factorial_design.des.t1.scans = {};
+for subj_idx=1:length(subjects)
+    subj_info=subjects(subj_idx);
+    matlabbatch{batch_idx}.spm.stats.factorial_design.des.t1.scans{end+1,1}=fullfile(params.data_dir, 'analysis', ...
+        subj_info.subj_id, [type '_rtf_rc' zero_event '_Tafdf'],'con_0002.nii,1');
+end
+matlabbatch{batch_idx}.spm.stats.factorial_design.cov = struct('c', {}, 'cname', {}, 'iCFI', {}, 'iCC', {});
+matlabbatch{batch_idx}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
+matlabbatch{batch_idx}.spm.stats.factorial_design.masking.tm.tm_none = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.masking.im = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.masking.em = {''};
+matlabbatch{batch_idx}.spm.stats.factorial_design.globalc.g_omit = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
+matlabbatch{batch_idx}.spm.stats.factorial_design.globalm.glonorm = 1;
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.stats.fmri_est.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.fmri_est.write_residuals = 0;
+matlabbatch{batch_idx}.spm.stats.fmri_est.method.Classical = 1;
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.stats.con.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.name = 'negative';
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.weights = 1;
+matlabbatch{batch_idx}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+matlabbatch{batch_idx}.spm.stats.con.delete = 1;
+batch_idx=batch_idx+1;
+
+matlabbatch{batch_idx}.spm.stats.results.spmmat(1) = {fullfile(analysis_dir,'SPM.mat')};
 matlabbatch{batch_idx}.spm.stats.results.conspec.titlestr = '';
 matlabbatch{batch_idx}.spm.stats.results.conspec.contrasts = Inf;
 matlabbatch{batch_idx}.spm.stats.results.conspec.threshdesc = 'none';
