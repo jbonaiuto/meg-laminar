@@ -11,6 +11,9 @@ end
 spm('defaults', 'EEG');
 spm_jobman('initcfg');
 
+freq_bands=[7 13;15 35;60 90;2 100];
+band_names={'alpha','beta','gamma','broadband'};
+            
 plot_analysis('scalp_freq',3);
 plot_analysis('time_freq',4);
 
@@ -35,12 +38,10 @@ plot_analysis('time_freq',4);
                 event_times(end+1)=-2500;
             end
             plot_time_frequency(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),...
-                TMap,tthresh,fullfile(analysis_dir,'t_test_positive.png'), event_times);            
+                TMap,tthresh,fullfile(analysis_dir,'t_test_positive.png'), freq_bands, event_times);            
             
         elseif units==3
             coords=V.mat*[[1:max_dim]' [1:max_dim]' [1:max_dim]' ones(max_dim,1)]';
-            freq_bands=[15 35;60 90;2 100];
-            band_names={'beta','gamma','broadband'};
             
             for i=1:size(freq_bands,1)
                 plot_scalp_frequency(coords(2,1:V.dim(2)),...
@@ -64,12 +65,10 @@ plot_analysis('time_freq',4);
                 event_times(end+1)=-2500;
             end
             plot_time_frequency(coords(2,1:V.dim(2)),coords(1,1:V.dim(1)),...
-                TMap,tthresh,fullfile(analysis_dir,'t_test_negative.png'), event_times);            
+                TMap,tthresh,fullfile(analysis_dir,'t_test_negative.png'), freq_bands, event_times);            
             
         elseif units==3
             coords=V.mat*[[1:max_dim]' [1:max_dim]' [1:max_dim]' ones(max_dim,1)]';
-            freq_bands=[15 35;60 90;2 100];
-            band_names={'beta','gamma','broadband'};
             
             for i=1:size(freq_bands,1)
                 plot_scalp_frequency(coords(2,1:V.dim(2)),...
@@ -81,7 +80,7 @@ plot_analysis('time_freq',4);
         
     end
 
-    function plot_time_frequency(times,freqs, x, threshold, filename, event_times)
+    function plot_time_frequency(times,freqs, x, threshold, filename, freq_bands, event_times)
         f=figure();
         imagesc(times,freqs,x);
         set(gca,'clim',[threshold max(x(:))]);
@@ -89,6 +88,10 @@ plot_analysis('time_freq',4);
         hold on;
         for i=1:length(event_times)
             plot([event_times(i) event_times(i)],[freqs(1) freqs(end)],'w--');
+        end
+        for i=1:size(freq_bands,1)-1
+            plot([times(1) times(end)],[freq_bands(i,1) freq_bands(i,1)],'w--');
+            plot([times(1) times(end)],[freq_bands(i,2) freq_bands(i,2)],'w--');
         end
         ylabel('Frequency (Hz)');
         xlabel('Time (ms)');
@@ -104,7 +107,7 @@ plot_analysis('time_freq',4);
         
         f=figure('position', [0, 0, 1200, 600]);
         subplot(2,2,1);
-        imagesc(y,freqs,yf');
+        imagesc(y,freqs(freq_idx),yf');
         set(gca,'clim',[threshold max([threshold+1 max(yf(:))])]);
         set(gca,'ydir','normal');
         title(sprintf('%d-%dHz',freq_band(1),freq_band(2)));
@@ -113,7 +116,7 @@ plot_analysis('time_freq',4);
         colorbar();
         
         subplot(2,2,2);
-        imagesc(y,freqs,xf');
+        imagesc(y,freqs(freq_idx),xf');
         set(gca,'clim',[threshold max([threshold+1 max(xf(:))])]);
         set(gca,'ydir','normal');
         title(sprintf('%d-%dHz',freq_band(1),freq_band(2)));
