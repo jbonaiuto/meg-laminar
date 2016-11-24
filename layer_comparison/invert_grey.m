@@ -1,12 +1,18 @@
 function invert_grey(subj_info, session_num, zero_event, foi, woi, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'patch_size',0.4);  %define default values
+defaults = struct('data_dir', '/data/pred_coding', 'patch_size',0.4, 'surf_dir', '', 'mri_dir', '');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
+end
+if length(params.surf_dir)==0
+    params.surf_dir=fullfile(params.data_dir,'surf');
+end
+if length(params.mri_dir)==0
+    params.mri_dir=fullfile(params.data_dir,'mri');
 end
 
 data_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session_num));
@@ -56,8 +62,8 @@ clear jobs
 jobfile = 'invert_grey_job.m';
 inputs = {};
 inputs{1,1}={removed_file_name};
-inputs{2,1}={fullfile(params.data_dir,'mri',[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
-inputs{3,1}={fullfile(params.data_dir,'surf',[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed-ds_pial.hires.deformed.surf.gii')};
+inputs{2,1}={fullfile(params.mri_dir,[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
+inputs{3,1}={fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed-ds_pial.hires.deformed.surf.gii')};
 inputs{4,1}=subj_info.nas;
 inputs{5,1}=subj_info.lpa;
 inputs{6,1}=subj_info.rpa;
