@@ -32,6 +32,6 @@ pial=gifti(fullfile(params.surf_dir, [subj_info.subj_id subj_info.birth_date '-s
 white_pial_map=map_white_to_pial(white, pial);
 
 for i=1:length(comparison_names)
-    comparison_name=comparison_name{i};
+    comparison_name=comparison_names{i};
     compare_session_layers(subj_info, session_num, foi, comparison_wois(i,:), baseline_wois(i,:), comparison_name, 'data_dir', params.data_dir, 'patch_size', params.patch_size, 'white_pial_map', white_pial_map);
 end
