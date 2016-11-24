@@ -1,4 +1,4 @@
-function extract_inversion_source(subj_info, session_num, foi, woi1, woi2, varargin)
+function extract_inversion_source(subj_info, session_num, foi, wois, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', '/data/pred_coding', 'patch_size',0.4);  %define default values
@@ -23,28 +23,22 @@ clear jobs
 jobfile = 'inversion_results_job.m';
 inputs = {};
 inputs{1,1}={coreg_file_name};
-inputs{2,1}=woi1;
+inputs{2,1}=wois;
 inputs{3,1}=foi;
-inputs{4,1}={coreg_file_name};
-inputs{5,1}=woi2;
-inputs{6,1}=foi;
 spm_jobman('initcfg');
 spm_jobman('run', jobfile, inputs{:});    
 
-% Move files to subdirectories
-woi1_dir=fullfile(foi_dir, ['t' num2str(woi1(1)) '_' num2str(woi1(2))]);
-if exist(woi1_dir,'dir')~=7
-    mkdir(woi1_dir);
-end
-woi2_dir=fullfile(foi_dir, ['t' num2str(woi2(1)) '_' num2str(woi2(2))]);
-if exist(woi2_dir,'dir')~=7
-    mkdir(woi2_dir);
-end
-movefile(fullfile(foi_dir, sprintf('r%s_%d_1_t%d_%d_f%d_%d_*', subj_info.subj_id, session_num, woi1(1), woi1(2), foi(1), foi(2))), woi1_dir);
-movefile(fullfile(foi_dir, sprintf('r%s_%d_1_t%d_%d_f%d_%d_*', subj_info.subj_id, session_num, woi2(1), woi2(2), foi(1), foi(2))), woi2_dir);
+for i=1:size(wois,1)
+    % Move files to subdirectories
+    woi=wois(i,:);
+    woi_dir=fullfile(foi_dir, ['t' num2str(woi(1)) '_' num2str(woi(2))]);
+    if exist(woi_dir,'dir')~=7
+        mkdir(woi_dir);
+    end
+    movefile(fullfile(foi_dir, sprintf('r%s_%d_1_t%d_%d_f%d_%d_*', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2))), woi_dir);
 
-% Split pial and grey sources
-split_inversion_results(subj_info, grey_coreg_dir, foi, woi1, 'patch_size', params.patch_size);
-split_inversion_results(subj_info, grey_coreg_dir, foi, woi2, 'patch_size', params.patch_size);
+    % Split pial and grey sources
+    split_inversion_results(subj_info, grey_coreg_dir, foi, woi, 'patch_size', params.patch_size);
+end
 
 
