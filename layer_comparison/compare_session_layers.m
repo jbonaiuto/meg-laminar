@@ -1,18 +1,21 @@
 function [pial_perc_change, white_perc_change]=compare_session_layers(subj_info, session_num, foi, woi, baseline, comparison_name, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'save_results', true, 'patch_size', 0.4, 'white_pial_map', []);  %define default values
+defaults = struct('data_dir', '/data/pred_coding', 'save_results', true, 'patch_size', 0.4, 'white_pial_map', [],'surf_dir','');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
 end
+if length(params.surf_dir)==0
+    params.surf_dir=fullfile(params.data_dir,'surf');
+end
 
 % Get map from white matter to pial surface
 if length(params.white_pial_map)==0
-    white=gifti(fullfile(params.data_dir, 'surf',[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed.surf.gii'));
-    pial=gifti(fullfile(params.data_dir, 'surf',[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed.surf.gii'));
+    white=gifti(fullfile(params.surf_dir, [subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed.surf.gii'));
+    pial=gifti(fullfile(params.surf_dir, [subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed.surf.gii'));
     params.white_pial_map=map_white_to_pial(white, pial);
 end
 
@@ -42,7 +45,9 @@ for f=1:size(files,1)
 end
 % Compute percentage change from baseline in pial surface
 % TODO - this is per trial baseline, what about mean baseline?
-pial_perc_change=(pial_woi_trials-pial_baseline_trials)./pial_baseline_trials;
+%pial_baseline=repmat(mean(pial_baseline_trials,2),1,size(pial_woi_trials,2));
+%pial_perc_change=(pial_woi_trials-pial_baseline)./pial_baseline;
+pial_perc_change=pial_woi_trials-pial_baseline_trials;
 
 % Load all white matter data from woi
 white_woi_trials=[];
@@ -63,7 +68,10 @@ for f=1:size(files,1)
 end
 % Compute percent change from baseline in white matter surface
 % TODO - this is per trial baseline, what about mean baseline?
-white_perc_change=(white_woi_trials-white_baseline_trials)./white_baseline_trials;
+%white_perc_change=(white_woi_trials-white_baseline_trials)./white_baseline_trials;
+%white_baseline=repmat(mean(white_baseline_trials,2),1,size(white_woi_trials,2));
+%white_perc_change=(white_woi_trials-white_baseline)./white_baseline;
+white_perc_change=white_woi_trials-white_baseline_trials;
 
 if params.save_results
     % Save pial percent change
