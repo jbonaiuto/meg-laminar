@@ -11,7 +11,7 @@ end
 
 woi_dir=fullfile(grey_coreg_dir, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))], ['t' num2str(woi(1)) '_' num2str(woi(2))]);
 
-[files,dirs] = spm_select('List', woi_dir, ['^r' subj_info.subj_id '.*\.gii']);
+[files,dirs] = spm_select('List', woi_dir, ['^br' subj_info.subj_id '.*\.gii']);
 for f=1:size(files,1)
     filename=deblank(files(f,:));
     parts=splitstring(filename,'.');

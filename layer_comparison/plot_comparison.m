@@ -20,32 +20,33 @@ pial_wm_diff=fullfile(foi_dir,['pial-white.' comparison_name '.diff.shape.gii'])
 pial_metric=gifti(pial_comparison);
 pial_pos_vals=find(pial_metric.cdata(:)>0);
 pial_neg_vals=find(pial_metric.cdata(:)<0);
-pial_pos_percentiles=tiedrank(pial_metric.cdata(pial_pos_vals))/length(pial_pos_vals);
-pial_neg_percentiles=tiedrank(pial_metric.cdata(pial_neg_vals))/length(pial_neg_vals);
-pial_min_clipped_val=min(pial_metric.cdata(pial_neg_vals(find(pial_neg_percentiles>=.02))));
-if length(pial_min_clipped_val)==0
-    pial_min_clipped_val=0;
-end
-pial_max_clipped_val=max(pial_metric.cdata(pial_pos_vals(find(pial_pos_percentiles<=.98))));
-if length(pial_max_clipped_val)==0
-    pial_max_clipped_val=0;
+if length(pial_neg_vals)
+    pial_pos_percentiles=tiedrank(pial_metric.cdata(pial_pos_vals))/length(pial_pos_vals);
+    pial_neg_percentiles=tiedrank(pial_metric.cdata(pial_neg_vals))/length(pial_neg_vals);
+    pial_min_clipped_val=min(pial_metric.cdata(pial_neg_vals(find(pial_neg_percentiles>=.02))));
+    pial_max_clipped_val=max(pial_metric.cdata(pial_pos_vals(find(pial_pos_percentiles<=.98))));
+else
+    pial_percentiles=tiedrank(pial_metric.cdata(:))/length(pial_metric.cdata(:));
+    pial_min_clipped_val=min(pial_metric.cdata(find(pial_percentiles>=.02)));
+    pial_max_clipped_val=max(pial_metric.cdata(find(pial_percentiles<=.98)));
 end
 
 wm_metric=gifti(wm_comparison);
 wm_pos_vals=find(wm_metric.cdata(:)>0);
 wm_neg_vals=find(wm_metric.cdata(:)<0);
-wm_pos_percentiles=tiedrank(wm_metric.cdata(wm_pos_vals))/length(wm_pos_vals);
-wm_neg_percentiles=tiedrank(wm_metric.cdata(wm_neg_vals))/length(wm_neg_vals);
-wm_min_clipped_val=min(wm_metric.cdata(wm_neg_vals(find(wm_neg_percentiles>=.02))));
-if length(wm_min_clipped_val)==0
-    wm_min_clipped_val=0;
-end
-wm_max_clipped_val=max(wm_metric.cdata(wm_pos_vals(find(wm_pos_percentiles<=.98))));
-if length(wm_max_clipped_val)==0
-    wm_max_clipped_val=0;
+if length(wm_neg_vals)
+    wm_pos_percentiles=tiedrank(wm_metric.cdata(wm_pos_vals))/length(wm_pos_vals);
+    wm_neg_percentiles=tiedrank(wm_metric.cdata(wm_neg_vals))/length(wm_neg_vals);
+    wm_min_clipped_val=min(wm_metric.cdata(wm_neg_vals(find(wm_neg_percentiles>=.02))));
+    wm_max_clipped_val=max(wm_metric.cdata(wm_pos_vals(find(wm_pos_percentiles<=.98))));
+else
+    wm_percentiles=tiedrank(wm_metric.cdata(:))/length(wm_metric.cdata(:));
+    wm_min_clipped_val=min(wm_metric.cdata(find(wm_percentiles>=.02)));
+    wm_max_clipped_val=max(wm_metric.cdata(find(wm_percentiles<=.98)));
 end
 
 limits=[min([pial_min_clipped_val wm_min_clipped_val]) max([pial_max_clipped_val wm_max_clipped_val])];
+%limits=[min([pial_min_clipped_val wm_min_clipped_val]) 1];
 ax=0;
 if params.plot || length(params.output_file)>0
     fig=figure('Position',[1 1 1800 400],'PaperUnits','points','PaperPosition',[1 1 900 200],'PaperPositionMode','manual');

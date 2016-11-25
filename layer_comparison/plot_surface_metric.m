@@ -13,7 +13,7 @@ end
 if params.plot || length(params.output_file)>0
     if params.ax==0
         fig=figure('Renderer','OpenGL', 'Color',[1 1 1]);
-        params.ax = axes('Visible', 'off', 'Parent', fig, 'Projection', 'perspective', 'PlotBoxAspectRatio', [1.268 1 1.129], 'DataAspectRatio', [1 1 1], 'CameraViewAngle', 6.028, 'CameraUpVector', subj_info.camera_up_vector, 'CameraPosition', subj_info.camera_position);
+        params.ax = axes('Visible', 'off', 'Parent', fig, 'Projection', 'perspective', 'PlotBoxAspectRatio', [1.268 1 1.129], 'DataAspectRatio', [1 1 1], 'CameraViewAngle', 6.028, 'CameraUpVector', subj_info.camera_up_vector(view), 'CameraPosition', subj_info.camera_position(view));
     % Otherwise set axis properties
     else
         set(params.ax,'Visible','off');
@@ -67,13 +67,23 @@ if params.plot || length(params.output_file)>0
         neg_vals=find(metric_data<0);
 
         % Compute percentiles
-        pos_percentiles=tiedrank(metric_data(pos_vals))/length(pos_vals);
-        neg_percentiles=tiedrank(metric_data(neg_vals))/length(neg_vals);
+        if length(neg_vals)
+            pos_percentiles=tiedrank(metric_data(pos_vals))/length(pos_vals);
+            neg_percentiles=tiedrank(metric_data(neg_vals))/length(neg_vals);
 
-        % Min and max are 2% and 98% of neg and pos values
-        min_clipped_val=min(metric_data(neg_vals(find(neg_percentiles>=.02))));
-        max_clipped_val=max(metric_data(pos_vals(find(pos_percentiles<=.98))));
-        params.limits=[min_clipped_val max_clipped_val];
+            % Min and max are 2% and 98% of neg and pos values
+            min_clipped_val=min(metric_data(neg_vals(find(neg_percentiles>=.02))));
+            max_clipped_val=max(metric_data(pos_vals(find(pos_percentiles<=.98))));
+            params.limits=[min_clipped_val max_clipped_val];
+        else
+            percentiles=tiedrank(metric_data)/length(metric_data);
+            
+            % Min and max are 2% and 98% of neg and pos values
+            min_clipped_val=min(metric_data(find(percentiles>=.02)));
+            max_clipped_val=max(metric_data(find(percentiles<=.98)));
+            params.limits=[min_clipped_val max_clipped_val];
+        end
+            
     end
 
     % Number of colors overall
