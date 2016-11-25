@@ -15,7 +15,7 @@ wm_surf=fullfile(params.subjects_dir, [subj_info.subj_id subj_info.birth_date '-
 pial_comparison=fullfile(foi_dir,['pial.' comparison_name '.t.shape.gii']);
 wm_comparison=fullfile(foi_dir,['white.' comparison_name '.t.shape.gii']);
 pial_wm_comparison=fullfile(foi_dir,['pial-white.' comparison_name '.t.shape.gii']);
-pial_wm_diff=fullfile(foi_dir,['pial-white.' comparison_name '.perc_change.shape.gii']);
+pial_wm_diff=fullfile(foi_dir,['pial-white.' comparison_name '.diff.shape.gii']);
 
 pial_metric=gifti(pial_comparison);
 pial_pos_vals=find(pial_metric.cdata(:)>0);
