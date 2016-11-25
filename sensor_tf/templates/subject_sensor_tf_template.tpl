@@ -5,7 +5,13 @@
 
 	<body bgcolor="#ffffff">
 		<h1>{PAGETITLE}</h1>
-		<h2>Dots-aligned</h2>
+		<h1>Events</h1>
+		<ul>
+			<li><a href="#dots_aligned">Dots-aligned</a></li>
+			<li><a href="#instruction_aligned">Instruction-aligned</a></li>
+			<li><a href="#response_aligned">Response-aligned</a></li>
+		</ul>
+		<a name="dots_aligned"><h2>Dots-aligned</h2></a>
 		<table border="1" bgcolor="#cccccc" cellpadding="4" cellspacing="0">
 
 			<tr>
@@ -39,7 +45,7 @@
 				<td><img src="{DOTSNEGATIVESFGAMMASRC}" width="100%"/></td>
             		<tr>
 		</table>
-		<h2>Instruction-aligned</h2>
+		<a name="instruction_aligned"><h2>Instruction-aligned</h2></a>
 		<table border="1" bgcolor="#cccccc" cellpadding="4" cellspacing="0">
 
 			<tr>
@@ -73,7 +79,7 @@
 				<td><img src="{INSTRNEGATIVESFGAMMASRC}" width="100%"/></td>
             		<tr>
 		</table>
-		<h2>Response-aligned</h2>
+		<a name="response_aligned"><h2>Response-aligned</h2></a>
 		<table border="1" bgcolor="#cccccc" cellpadding="4" cellspacing="0">
 
 			<tr>
