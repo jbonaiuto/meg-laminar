@@ -17,7 +17,7 @@
 function run_session_foi_layer_comparisons(subj_info, session_num, zero_event, foi, inversion_woi, comparison_names, comparison_wois, baseline_woi, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'patch_size',0.4, 'surf_dir', '', 'mri_dir', '');  %define default values
+defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB', 'patch_size',0.4, 'surf_dir', '', 'mri_dir', '');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -28,7 +28,7 @@ if length(params.surf_dir)==0
     params.surf_dir=fullfile(params.data_dir,'surf');
 end
 
-invert_grey(subj_info, session_num, zero_event, foi, inversion_woi, baseline_woi, 'data_dir', params.data_dir, 'patch_size', params.patch_size, 'surf_dir', params.surf_dir, 'mri_dir', params.mri_dir);
+invert_grey(subj_info, session_num, zero_event, foi, inversion_woi, 'data_dir', params.data_dir, 'patch_size', params.patch_size, 'surf_dir', params.surf_dir, 'mri_dir', params.mri_dir, 'inv_type', params.inv_type);
 
 all_wois=[comparison_wois; baseline_woi];
 unique_wois=unique(all_wois,'rows');

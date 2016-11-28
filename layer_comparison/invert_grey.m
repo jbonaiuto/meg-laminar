@@ -1,7 +1,7 @@
-function invert_grey(subj_info, session_num, zero_event, foi, woi, baseline, varargin)
+function invert_grey(subj_info, session_num, zero_event, foi, woi, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'patch_size',0.4, 'surf_dir', '', 'mri_dir', '', 'init', true, 'coreg', true, 'invert', true);  %define default values
+defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB', 'patch_size',0.4, 'surf_dir', '', 'mri_dir', '', 'init', true, 'coreg', true, 'invert', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -19,13 +19,13 @@ data_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session
 data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', zero_event, session_num));
 
 % Create directory for inversion results
-foi_dir=fullfile(data_dir, 'grey_coreg', ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))]);
+foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))]);
 if exist(foi_dir,'dir')~=7
     mkdir(foi_dir);
 end
 coreg_file_name=fullfile(foi_dir, sprintf('%s_%d.mat', subj_info.subj_id, session_num));
 removed_file_name=fullfile(foi_dir, sprintf('r%s_%d.mat', subj_info.subj_id, session_num));
-bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session_num));
+%bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session_num));
 
 spm('defaults', 'EEG');
 spm_jobman('initcfg'); 
@@ -51,20 +51,20 @@ if params.init
     batch_idx=batch_idx+1;
 
     %%%%%% BASELINE CORRECT %%%%%%%%
-    matlabbatch{batch_idx}.spm.meeg.preproc.bc.D = {removed_file_name};
-    matlabbatch{batch_idx}.spm.meeg.preproc.bc.timewin = baseline;
-    matlabbatch{batch_idx}.spm.meeg.preproc.bc.prefix = 'b';
-    batch_idx=batch_idx+1;
+    %matlabbatch{batch_idx}.spm.meeg.preproc.bc.D = {removed_file_name};
+    %matlabbatch{batch_idx}.spm.meeg.preproc.bc.timewin = baseline;
+    %matlabbatch{batch_idx}.spm.meeg.preproc.bc.prefix = 'b';
+    %batch_idx=batch_idx+1;
     
     spm_jobman('run', matlabbatch);
 
     % Relabel trials to all be same condition
-    load(bc_file_name);
+    load(removed_file_name);
     D.condlist={zero_event};
     for trial_idx=1:length(D.trials)
         D.trials(trial_idx).label=zero_event;
     end
-    save(bc_file_name,'D');
+    save(removed_file_name,'D');
     
 end
 
@@ -75,7 +75,7 @@ if params.coreg
     batch_idx=1;
 
     % Coregister with surface
-    matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {bc_file_name};
+    matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {removed_file_name};
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = 'grey';
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.mri_dir,[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
@@ -102,11 +102,11 @@ if params.invert
     clear jobs
     matlabbatch={};
     batch_idx=1;
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.D = {bc_file_name};
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.D = {removed_file_name};
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.val = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.whatconditions.all = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invfunc = 'Classic';
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invtype = 'EBB';
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invtype = params.inv_type;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.woi = woi;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.foi = foi;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.hanning = 0;

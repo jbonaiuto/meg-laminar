@@ -1,7 +1,7 @@
 function compare_session_layers(subj_info, session_num, foi, woi, baseline, comparison_name, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'save_results', true, 'patch_size', 0.4, 'white_pial_map', [],'surf_dir','');  %define default values
+defaults = struct('data_dir', '/data/pred_coding', 'save_results', true, 'inv_type','EBB','patch_size', 0.4, 'white_pial_map', [],'surf_dir','');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -19,7 +19,7 @@ if length(params.white_pial_map)==0
     params.white_pial_map=map_white_to_pial(white, pial);
 end
 
-foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))]);
+foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))]);
 
 load(fullfile(foi_dir,sprintf('r%s_%d.mat', subj_info.subj_id, session_num)));
 ntrials=length(D.trials);
@@ -33,7 +33,7 @@ baseline_dir=fullfile(foi_dir, ['t' num2str(baseline(1)) '_' num2str(baseline(2)
 pial_woi_trials=[];
 %[files,dirs] = spm_select('List', woi_dir, ['^pial_r' subj_info.subj_id '_' num2str(session_num) '_1_t' num2str(woi(1)) '_' num2str(woi(2)) '_f' num2str(foi(1)) '_' num2str(foi(2)) '.*\.gii']);
 for t=1:ntrials
-    filename=fullfile(woi_dir, sprintf('pial_br%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2), t));
+    filename=fullfile(woi_dir, sprintf('pial_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2), t));
     trial_mesh=gifti(filename);
     pial_woi_trials(:,t)=trial_mesh.cdata(:);
 end
@@ -41,7 +41,7 @@ end
 % Load all pial data from baseline
 pial_baseline_trials=[];
 for t=1:ntrials
-    filename=fullfile(baseline_dir, sprintf('pial_br%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, baseline(1), baseline(2), foi(1), foi(2), t));
+    filename=fullfile(baseline_dir, sprintf('pial_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, baseline(1), baseline(2), foi(1), foi(2), t));
     trial_mesh=gifti(filename);
     pial_baseline_trials(:,t)=trial_mesh.cdata(:);
 end
@@ -54,7 +54,7 @@ pial_diff=pial_woi_trials-pial_baseline_trials;
 white_woi_trials=[];
 %[files,dirs] = spm_select('List', woi_dir, ['^white_r' subj_info.subj_id '_' num2str(session_num) '_1_t' num2str(woi(1)) '_' num2str(woi(2)) '_f' num2str(foi(1)) '_' num2str(foi(2)) '.*\.gii']);
 for t=1:ntrials
-    filename=fullfile(woi_dir, sprintf('white_br%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2), t));
+    filename=fullfile(woi_dir, sprintf('white_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2), t));
     trial_mesh=gifti(filename);
     white_woi_trials(:,t)=trial_mesh.cdata(:);
 end
@@ -63,7 +63,7 @@ end
 white_baseline_trials=[];
 %[files,dirs] = spm_select('List', baseline_dir, ['^white_r' subj_info.subj_id '_' num2str(session_num) '_1_t' num2str(baseline(1)) '_' num2str(baseline(2)) '_f' num2str(foi(1)) '_' num2str(foi(2)) '.*\.gii']);
 for t=1:ntrials
-    filename=fullfile(baseline_dir, sprintf('white_br%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, baseline(1), baseline(2), foi(1), foi(2), t));
+    filename=fullfile(baseline_dir, sprintf('white_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, baseline(1), baseline(2), foi(1), foi(2), t));
     trial_mesh=gifti(filename);
     white_baseline_trials(:,t)=trial_mesh.cdata(:);
 end
