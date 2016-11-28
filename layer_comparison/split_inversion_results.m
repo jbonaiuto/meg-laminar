@@ -1,7 +1,7 @@
 function split_inversion_results(subj_info, grey_coreg_dir, foi, woi, varargin)
 
 % Parse inputs
-defaults = struct('patch_size',0.4);  %define default values
+defaults = struct('patch_size',0.4,'inv_type','EBB');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -9,9 +9,9 @@ for f = fieldnames(defaults)',
     end
 end
 
-woi_dir=fullfile(grey_coreg_dir, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))], ['t' num2str(woi(1)) '_' num2str(woi(2))]);
+woi_dir=fullfile(grey_coreg_dir, params.inv_type, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))], ['t' num2str(woi(1)) '_' num2str(woi(2))]);
 
-[files,dirs] = spm_select('List', woi_dir, ['^br' subj_info.subj_id '.*\.gii']);
+[files,dirs] = spm_select('List', woi_dir, ['^r' subj_info.subj_id '.*\.gii']);
 for f=1:size(files,1)
     filename=deblank(files(f,:));
     parts=splitstring(filename,'.');
