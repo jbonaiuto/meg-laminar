@@ -1,4 +1,4 @@
-function compare_session_layers(subj_info, session_num, foi, woi, baseline, comparison_name, varargin)
+function compare_session_layers(subj_info, session_num, zero_event, foi, wois, baseline, comparison_names, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', '/data/pred_coding', 'save_results', true, 'inv_type','EBB','patch_size', 0.4, 'white_pial_map', [],'surf_dir','');  %define default values
@@ -19,113 +19,102 @@ if length(params.white_pial_map)==0
     params.white_pial_map=map_white_to_pial(white, pial);
 end
 
-foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))]);
+foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], zero_event, ['f' num2str(foi(1)) '_' num2str(foi(2))]);
 
-load(fullfile(foi_dir,sprintf('r%s_%d.mat', subj_info.subj_id, session_num)));
-ntrials=length(D.trials);
-    
-spm('defaults', 'EEG');
-
-woi_dir=fullfile(foi_dir, ['t' num2str(woi(1)) '_' num2str(woi(2))]);
-baseline_dir=fullfile(foi_dir, ['t' num2str(baseline(1)) '_' num2str(baseline(2))]);
-
-% Load all pial data from woi
-pial_woi_trials=[];
-%[files,dirs] = spm_select('List', woi_dir, ['^pial_r' subj_info.subj_id '_' num2str(session_num) '_1_t' num2str(woi(1)) '_' num2str(woi(2)) '_f' num2str(foi(1)) '_' num2str(foi(2)) '.*\.gii']);
-for t=1:ntrials
-    filename=fullfile(woi_dir, sprintf('pial_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2), t));
-    trial_mesh=gifti(filename);
-    pial_woi_trials(:,t)=trial_mesh.cdata(:);
+D=spm_eeg_load(fullfile(foi_dir,sprintf('r%s_%d.mat', subj_info.subj_id, session_num)));
+goodchans=D.indchantype('MEGGRAD','good');
+Dgood=squeeze(D(goodchans,:,:));
+M=D.inv{1}.inverse.M;
+U=D.inv{1}.inverse.U{1};
+n_combined_vertices=size(M,1);
+n_vertices=round(n_combined_vertices/2);
+times=D.inv{1}.inverse.pst;
+baseline_idx=intersect(find(times>=baseline(1)),find(times<=baseline(2)));
+ntrials=size(Dgood,3);
+ncomparisons=length(comparison_names);
+woi_vals=zeros(ncomparisons,n_combined_vertices,ntrials);
+baselines=zeros(n_combined_vertices,ntrials);
+parfor t=1:ntrials
+%for t=1:ntrials
+    d1=squeeze(Dgood(:,:,t));
+    Dtrial=M*U*d1;
+    baselines(:,t)=sum(Dtrial(:,baseline_idx).^2,2);
+    for i=1:ncomparisons
+        woi_idx=intersect(find(times>=wois(i,1)),find(times<=wois(i,2)));        
+        woi_vals(i,:,t)=sum(Dtrial(:,woi_idx).^2,2);
+    end
 end
+mean_baseline=mean(baselines,2);
 
-% Load all pial data from baseline
-pial_baseline_trials=[];
+pial_diffs=zeros(ncomparisons,n_vertices,ntrials);
+white_diffs=zeros(ncomparisons,n_vertices,ntrials);
 for t=1:ntrials
-    filename=fullfile(baseline_dir, sprintf('pial_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, baseline(1), baseline(2), foi(1), foi(2), t));
-    trial_mesh=gifti(filename);
-    pial_baseline_trials(:,t)=trial_mesh.cdata(:);
+    for i=1:ncomparisons
+        diff=(squeeze(woi_vals(i,:,t))-mean_baseline')./mean_baseline';
+        pial_diffs(i,:,t)=diff(n_vertices+1:end);
+        white_diffs(i,:,t)=diff(1:n_vertices);
+    end
 end
-% pial_baseline=repmat(mean(pial_baseline_trials,2),1,ntrials);
-% pial_diff=(pial_woi_trials-pial_baseline)./pial_baseline;
-%pial_diff=pial_woi_trials;
-pial_diff=pial_woi_trials-pial_baseline_trials;
-
-% Load all white matter data from woi
-white_woi_trials=[];
-%[files,dirs] = spm_select('List', woi_dir, ['^white_r' subj_info.subj_id '_' num2str(session_num) '_1_t' num2str(woi(1)) '_' num2str(woi(2)) '_f' num2str(foi(1)) '_' num2str(foi(2)) '.*\.gii']);
-for t=1:ntrials
-    filename=fullfile(woi_dir, sprintf('white_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, woi(1), woi(2), foi(1), foi(2), t));
-    trial_mesh=gifti(filename);
-    white_woi_trials(:,t)=trial_mesh.cdata(:);
-end
-
-% Load all white matter data from baseline
-white_baseline_trials=[];
-%[files,dirs] = spm_select('List', baseline_dir, ['^white_r' subj_info.subj_id '_' num2str(session_num) '_1_t' num2str(baseline(1)) '_' num2str(baseline(2)) '_f' num2str(foi(1)) '_' num2str(foi(2)) '.*\.gii']);
-for t=1:ntrials
-    filename=fullfile(baseline_dir, sprintf('white_r%s_%d_1_t%d_%d_f%d_%d_1_%d.gii', subj_info.subj_id, session_num, baseline(1), baseline(2), foi(1), foi(2), t));
-    trial_mesh=gifti(filename);
-    white_baseline_trials(:,t)=trial_mesh.cdata(:);
-end
-% white_baseline=repmat(mean(white_baseline_trials,2),1,ntrials);
-% white_diff=(white_woi_trials-white_baseline)./white_baseline;
-%white_diff=white_woi_trials;
-white_diff=white_woi_trials-white_baseline_trials;
 
 if params.save_results
-    % Save pial diff
-    c=file_array(fullfile(foi_dir, ['pial.' comparison_name '.diff.shape.dat']),size(pial_diff,1),'FLOAT32-LE',0,1,0);
-    c(:)=mean(pial_diff,2);
-    pial_diff_surf = gifti;
-    pial_diff_surf.cdata = c;
-    save(pial_diff_surf, fullfile(foi_dir, ['pial.' comparison_name '.diff.shape.gii']), 'ExternalFileBinary');
+    for i=1:ncomparisons
+        comparison_name=comparison_names{i};
+        pial_diff=squeeze(pial_diffs(i,:,:));
+        white_diff=squeeze(white_diffs(i,:,:));
+        % Save pial diff
+        c=file_array(fullfile(foi_dir, ['pial.' comparison_name '.diff.shape.dat']),size(pial_diff,1),'FLOAT32-LE',0,1,0);
+        c(:)=mean(pial_diff,2);
+        pial_diff_surf = gifti;
+        pial_diff_surf.cdata = c;
+        save(pial_diff_surf, fullfile(foi_dir, ['pial.' comparison_name '.diff.shape.gii']), 'ExternalFileBinary');
 
-    % Compare pial values at two wois
-    [H,pvals,ci,STATS]=ttest(pial_diff');
-    pial_tvals=STATS.tstat';
+        % Compare pial values at two wois
+        [H,pvals,ci,STATS]=ttest(pial_diff');
+        pial_tvals=STATS.tstat';
 
-    % Save pial comparison
-    c=file_array(fullfile(foi_dir, ['pial.' comparison_name '.t.shape.dat']),size(pial_tvals),'FLOAT32-LE',0,1,0);
-    c(:)=pial_tvals;
-    pial_t_surf = gifti;
-    pial_t_surf.cdata = c;
-    save(pial_t_surf, fullfile(foi_dir, ['pial.' comparison_name '.t.shape.gii']), 'ExternalFileBinary');
+        % Save pial comparison
+        c=file_array(fullfile(foi_dir, ['pial.' comparison_name '.t.shape.dat']),size(pial_tvals),'FLOAT32-LE',0,1,0);
+        c(:)=pial_tvals;
+        pial_t_surf = gifti;
+        pial_t_surf.cdata = c;
+        save(pial_t_surf, fullfile(foi_dir, ['pial.' comparison_name '.t.shape.gii']), 'ExternalFileBinary');
 
-    % Save white matter diff
-    c=file_array(fullfile(foi_dir, ['white.' comparison_name '.diff.shape.dat']),size(white_diff,1),'FLOAT32-LE',0,1,0);
-    c(:)=mean(white_diff,2);
-    white_diff_surf = gifti;
-    white_diff_surf.cdata = c;
-    save(white_diff_surf, fullfile(foi_dir, ['white.' comparison_name '.diff.shape.gii']), 'ExternalFileBinary');
+        % Save white matter diff
+        c=file_array(fullfile(foi_dir, ['white.' comparison_name '.diff.shape.dat']),size(white_diff,1),'FLOAT32-LE',0,1,0);
+        c(:)=mean(white_diff,2);
+        white_diff_surf = gifti;
+        white_diff_surf.cdata = c;
+        save(white_diff_surf, fullfile(foi_dir, ['white.' comparison_name '.diff.shape.gii']), 'ExternalFileBinary');
 
-    % Compare white matter values at two wois
-    [H,pvals,ci,STATS]=ttest(white_diff');
-    white_tvals=STATS.tstat';
+        % Compare white matter values at two wois
+        [H,pvals,ci,STATS]=ttest(white_diff');
+        white_tvals=STATS.tstat';
 
-    % Save white matter comparison
-    c=file_array(fullfile(foi_dir, ['white.' comparison_name '.t.shape.dat']),size(white_tvals),'FLOAT32-LE',0,1,0);
-    c(:)=white_tvals;
-    white_t_surf = gifti;
-    white_t_surf.cdata = c;
-    save(white_t_surf, fullfile(foi_dir, ['white.' comparison_name '.t.shape.gii']), 'ExternalFileBinary');
+        % Save white matter comparison
+        c=file_array(fullfile(foi_dir, ['white.' comparison_name '.t.shape.dat']),size(white_tvals),'FLOAT32-LE',0,1,0);
+        c(:)=white_tvals;
+        white_t_surf = gifti;
+        white_t_surf.cdata = c;
+        save(white_t_surf, fullfile(foi_dir, ['white.' comparison_name '.t.shape.gii']), 'ExternalFileBinary');
 
-    % Compare pial and white matter differences
-    pial_white_diff=abs(pial_diff)-abs(white_diff(params.white_pial_map,:));
-    [H,pvals,ci,STATS]=ttest(pial_white_diff');
-    pial_white_tvals=STATS.tstat';
+        % Compare pial and white matter differences
+        pial_white_diff=abs(pial_diff)-abs(white_diff(params.white_pial_map,:));
+        [H,pvals,ci,STATS]=ttest(pial_white_diff');
+        pial_white_tvals=STATS.tstat';
 
-    % Save pial - white matter diff
-    c=file_array(fullfile(foi_dir, ['pial-white.' comparison_name '.diff.shape.dat']),size(pial_white_diff,1),'FLOAT32-LE',0,1,0);
-    c(:)=mean(pial_white_diff,2);
-    pial_white_diff_surf = gifti;
-    pial_white_diff_surf.cdata = c;
-    save(pial_white_diff_surf, fullfile(foi_dir,['pial-white.' comparison_name '.diff.shape.gii']), 'ExternalFileBinary');
+        % Save pial - white matter diff
+        c=file_array(fullfile(foi_dir, ['pial-white.' comparison_name '.diff.shape.dat']),size(pial_white_diff,1),'FLOAT32-LE',0,1,0);
+        c(:)=mean(pial_white_diff,2);
+        pial_white_diff_surf = gifti;
+        pial_white_diff_surf.cdata = c;
+        save(pial_white_diff_surf, fullfile(foi_dir,['pial-white.' comparison_name '.diff.shape.gii']), 'ExternalFileBinary');
 
-    % Save pial - white matter comparison
-    c=file_array(fullfile(foi_dir, ['pial-white.' comparison_name '.t.shape.dat']),size(pial_white_tvals),'FLOAT32-LE',0,1,0);
-    c(:)=pial_white_tvals;
-    pial_white_t_surf = gifti;
-    pial_white_t_surf.cdata = c;
-    save(pial_white_t_surf, fullfile(foi_dir,['pial-white.' comparison_name '.t.shape.gii']), 'ExternalFileBinary');
+        % Save pial - white matter comparison
+        c=file_array(fullfile(foi_dir, ['pial-white.' comparison_name '.t.shape.dat']),size(pial_white_tvals),'FLOAT32-LE',0,1,0);
+        c(:)=pial_white_tvals;
+        pial_white_t_surf = gifti;
+        pial_white_t_surf.cdata = c;
+        save(pial_white_t_surf, fullfile(foi_dir,['pial-white.' comparison_name '.t.shape.gii']), 'ExternalFileBinary');
+    end
 
 end
