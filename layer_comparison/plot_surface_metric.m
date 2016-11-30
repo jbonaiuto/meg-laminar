@@ -1,7 +1,8 @@
-function metric_data=plot_surface_metric(subj_info, surface_file, metric_file, view, varargin)
+%function metric_data=plot_surface_metric(subj_info, surface_file, metric_file, view, varargin)
+function metric_data=plot_surface_metric(subj_info, surface, metric, view, varargin)
 
 % Parse inputs
-defaults = struct('output_file','','output_format','png','ax',0,'limits',[],'threshold',0,'mask',[],'plot',true);  %define default values
+defaults = struct('output_file','','output_format','png','ax',0,'limits',[],'threshold',0,'mask',[],'plot',true,'title','');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -36,8 +37,8 @@ if params.plot || length(params.output_file)>0
 end
 
 % Load surface and metric data
-surface=gifti(surface_file);
-metric=gifti(metric_file);
+%surface=gifti(surface_file);
+%metric=gifti(metric_file);
 metric_data=metric.cdata(:);
 
 if params.plot || length(params.output_file)>0
@@ -169,6 +170,9 @@ if params.plot || length(params.output_file)>0
     % Set face color data
     set(hp,'FaceVertexCData', display_metric_data);
 
+    if length(params.title)
+        annotation(fig,'textbox',[0.15 0.85 0.2 .15],'String',{params.title},'FitBoxToText','on');
+    end
     % Save plot to file
     if length(params.output_file)>0
         if params.output_format=='eps'

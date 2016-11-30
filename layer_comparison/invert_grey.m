@@ -19,7 +19,7 @@ data_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session
 data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', zero_event, session_num));
 
 % Create directory for inversion results
-foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], ['f' num2str(foi(1)) '_' num2str(foi(2))]);
+foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], zero_event, ['f' num2str(foi(1)) '_' num2str(foi(2))]);
 if exist(foi_dir,'dir')~=7
     mkdir(foi_dir);
 end
