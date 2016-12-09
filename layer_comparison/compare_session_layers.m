@@ -1,4 +1,4 @@
-function compare_session_layers(subj_info, session_num, zero_event, foi, wois, baseline, comparison_names, varargin)
+function compare_session_layers(subj_info, session_num, zero_event, foi, wois, baseline_zero_event, baseline_woi, comparison_names, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', '/data/pred_coding', 'save_results', true, 'inv_type','EBB','patch_size', 0.4, 'white_pial_map', [],'surf_dir','');  %define default values
@@ -19,40 +19,35 @@ if length(params.white_pial_map)==0
     params.white_pial_map=map_white_to_pial(white, pial);
 end
 
+baseline_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], baseline_zero_event, ['f' num2str(foi(1)) '_' num2str(foi(2))],['t' num2str(baseline_woi(1)) '_' num2str(baseline_woi(2))]);
+[files,dirs] = spm_select('List', baseline_dir, '^pial.*\.gii');
+ncomparisons=length(comparison_names);
+ntrials=size(files,1);
+nvertices=length(params.white_pial_map);
+pial_baseline_vals=zeros(nvertices,ntrials);
+white_baseline_vals=zeros(nvertices,ntrials);
+for t=1:ntrials
+    file_part=sprintf('_r%s_%d_1_t%d_%d_f%d_%d_1_%d',subj_info.subj_id,session_num,baseline_woi(1),baseline_woi(2),foi(1),foi(2),t);
+    baseline_pial=gifti(fullfile(baseline_dir,sprintf('pial%s.gii',file_part)));
+    pial_baseline_vals(:,t)=baseline_pial.cdata(:);
+    baseline_white=gifti(fullfile(baseline_dir,sprintf('white%s.gii',file_part)));
+    white_baseline_vals(:,t)=baseline_white.cdata(:);
+end
+
 foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], zero_event, ['f' num2str(foi(1)) '_' num2str(foi(2))]);
 
-D=spm_eeg_load(fullfile(foi_dir,sprintf('r%s_%d.mat', subj_info.subj_id, session_num)));
-goodchans=D.indchantype('MEGGRAD','good');
-Dgood=squeeze(D(goodchans,:,:));
-M=D.inv{1}.inverse.M;
-U=D.inv{1}.inverse.U{1};
-n_combined_vertices=size(M,1);
-n_vertices=round(n_combined_vertices/2);
-times=D.inv{1}.inverse.pst;
-baseline_idx=intersect(find(times>=baseline(1)),find(times<=baseline(2)));
-ntrials=size(Dgood,3);
-ncomparisons=length(comparison_names);
-woi_vals=zeros(ncomparisons,n_combined_vertices,ntrials);
-baselines=zeros(n_combined_vertices,ntrials);
-parfor t=1:ntrials
-%for t=1:ntrials
-    d1=squeeze(Dgood(:,:,t));
-    Dtrial=M*U*d1;
-    baselines(:,t)=sum(Dtrial(:,baseline_idx).^2,2);
-    for i=1:ncomparisons
-        woi_idx=intersect(find(times>=wois(i,1)),find(times<=wois(i,2)));        
-        woi_vals(i,:,t)=sum(Dtrial(:,woi_idx).^2,2);
-    end
-end
-mean_baseline=mean(baselines,2);
-
-pial_diffs=zeros(ncomparisons,n_vertices,ntrials);
-white_diffs=zeros(ncomparisons,n_vertices,ntrials);
-for t=1:ntrials
-    for i=1:ncomparisons
-        diff=(squeeze(woi_vals(i,:,t))-mean_baseline')./mean_baseline';
-        pial_diffs(i,:,t)=diff(n_vertices+1:end);
-        white_diffs(i,:,t)=diff(1:n_vertices);
+pial_diffs=zeros(ncomparisons,nvertices,ntrials);
+white_diffs=zeros(ncomparisons,nvertices,ntrials);
+for i=1:ncomparisons
+    woi_dir=fullfile(foi_dir,['t' num2str(wois(i,1)) '_' num2str(wois(i,2))]);
+    for t=1:ntrials
+        file_part=sprintf('_r%s_%d_1_t%d_%d_f%d_%d_1_%d',subj_info.subj_id,session_num,wois(i,1),wois(i,2),foi(1),foi(2),t);
+        woi_pial=gifti(fullfile(woi_dir,sprintf('pial%s.gii',file_part)));
+        %pial_diffs(i,:,t)=(woi_pial.cdata(:)-pial_baseline_vals(:,t))./pial_baseline_vals(:,t);
+        pial_diffs(i,:,t)=woi_pial.cdata(:)-pial_baseline_vals(:,t);
+        woi_white=gifti(fullfile(woi_dir,sprintf('white%s.gii',file_part)));
+        %white_diffs(i,:,t)=(woi_white.cdata(:)-white_baseline_vals(:,t))./white_baseline_vals(:,t);
+        white_diffs(i,:,t)=woi_white.cdata(:)-white_baseline_vals(:,t);
     end
 end
 
