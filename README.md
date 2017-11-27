@@ -38,9 +38,7 @@ Requirements:
 % Sensor cluster TF
 
     run_tfs(subjects(3));
-
     extract_tfs(subjects(3));
-
     plot_tfs(subjects(3));
 
 
@@ -59,15 +57,10 @@ Requirements:
 % Run inversions
 
     for idx=1:length(subjects)
-
         for session_num=1:length(subjects(idx).sessions)
-    
             run_all_session(subjects(idx), session_num, contrasts);
-    
         end
-    
         run_all_subject(subjects(idx), contrasts);
-
     end
 
 
