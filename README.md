@@ -67,43 +67,29 @@ Requirements:
 % Plot example subjects
 
     for idx=1:length(contrasts)
-
         plot_classification_results_subject(subjects, contrasts(idx), 'thresh_percentile', 0, 'whole_brain', true, 'plot_ext', 'global_');
-    
         plot_classification_results_subject(subjects, contrasts(idx), 'thresh_percentile', 80, 'whole_brain', true, 'plot_ext', 'func_');
-    
         plot_classification_results_subject(subjects, contrasts(idx), 'thresh_percentile', 80, 'whole_brain', false, 'plot_ext', 'anat_');
-
     end
 
 
 % Plot subject-level results
 
     for idx=1:length(contrasts)
-
         plot_classification_results_subjects(subjects, contrasts(idx));
-
     end
 
 
 % Shuffled control
 
     for idx=1:length(subjects)
-
         for session_num=1:length(subjects(idx).sessions)
-
             run_all_session_shuffled(subjects(idx), session_num, contrasts);
-    
         end
-    
         run_all_subject_shuffled(subjects(idx), contrasts);
-
     end
-
     for idx=1:length(contrasts)
-
         plot_classification_results_subjects_shuffled(subjects, contrasts(idx));
-
     end
 
 
@@ -111,21 +97,13 @@ Requirements:
 % Co-registration error control
 
     for idx=1:length(subjects)
-
         for session_num=1:length(subjects(idx).sessions)
-    
             run_all_session_coregerr(subjects(idx), session_num, contrasts);
-    
         end
-
         run_all_subject_coregerr(subjects(idx), contrasts);
-
     end
-
     for idx=1:length(contrasts)
-
         plot_classification_results_subjects_coregerr(subjects, contrasts(idx));
-
     end
 
 
@@ -138,7 +116,5 @@ Requirements:
 %%% Condition comparison
 
     for idx=1:length(contrasts)
-
         plot_subjects_condition_power(subjects, contrasts(idx));
-
     end
