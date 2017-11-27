@@ -4,8 +4,7 @@ function cond_results=plot_subject_condition_power(subj_info, contrast, varargin
 defaults = struct('data_dir','d:/pred_coding','surf_dir', 'D:/pred_coding/surf',...
     'inv_type','EBB', 'patch_size',0.4,'filter_sessions',true,...
     'thresh_percentile',80,'roi_type','mean', 'recompute', false, 'recompute_roi',false,...
-    'correct_only', true, 'remove_woi_outliers', false, 'remove_rt_outliers', false,...
-    'plot', true);  %define default values
+    'correct_only', true,'plot', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -177,37 +176,6 @@ for session_num=1:length(subj_info.sessions)
         end
     end
 end
-
-keys=cond_results.pial_trials_woi.keys();
-for k_idx=1:length(keys)
-    condition=keys{k_idx};
-
-    rt_x=cond_results.rts(condition);
-    pial_x_woi=cond_results.pial_trials_woi(condition);
-    wm_x_woi=cond_results.wm_trials_woi(condition);
-
-    outliers=zeros(size(rt_x));        
-
-    if params.remove_rt_outliers
-        rt_outliers = outmdm(rt_x);
-        outliers=outliers+rt_outliers;
-    end
-    if params.remove_woi_outliers
-        pial_outliers = outmdm(pial_x_woi');
-        wm_outliers = outmdm(wm_x_woi');
-        outliers=outliers+pial_outliers+wm_outliers;
-    end
-
-    cond_results.rts(condition)=rt_x(outliers==0);
-
-    cond_results.pial_trials_woi(condition)=pial_x_woi(outliers==0);
-    pial_x_tc=cond_results.pial_trials_tc(condition);
-    cond_results.pial_trials_tc(condition)=pial_x_tc(:,outliers==0);
-
-    cond_results.wm_trials_woi(condition)=wm_x_woi(outliers==0);
-    wm_x_tc=cond_results.wm_trials_tc(condition);
-    cond_results.wm_trials_tc(condition)=wm_x_tc(:,outliers==0);
-end    
 
 x=dict();
 x('all-pial')=cond_results.pial_trials_tc('all');
