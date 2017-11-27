@@ -14,11 +14,6 @@ if length(params.surf_dir)==0
     params.surf_dir=fullfile(params.data_dir,'surf');
 end
     
-load('fadedblue_map');
-bluecm=fadedblue_map;
-load('fadedred_map');
-redcm=fadedred_map;
-
 spm('defaults','eeg');
 
 for i=1:length(contrasts)
@@ -72,6 +67,9 @@ for i=1:length(contrasts)
         pial_diff=[];
         white_diff=[];               
 
+        good_sessions=[1:length(subj_info.sessions)];
+        good_sessions=setdiff(good_sessions,subj_info.exclude_sessions(contrast.comparison_name));
+        
         foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
             num2str(good_sessions(1)), 'grey_coreg', params.inv_type,...
             ['p' num2str(params.patch_size)], contrast.zero_event,...
@@ -84,7 +82,7 @@ for i=1:length(contrasts)
         wm_lfn=spm_mesh_smooth(wm, wm_lfn, 20);        
         mapped_wm_lfn=wm_lfn(pial_white_map);
         
-        for session_num=1:length(subj_info.sessions)
+        for session_num=good_sessions
             foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
                 num2str(session_num), 'grey_coreg', params.inv_type,...
                 ['p' num2str(params.patch_size)], contrast.zero_event,...
