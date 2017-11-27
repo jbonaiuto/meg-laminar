@@ -1,31 +1,33 @@
-function invert_grey(subj_info, session_num, zero_event, foi, woi, varargin)
+function invert_grey(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB', 'patch_size',0.4, 'surf_dir', '', 'mri_dir', '', 'init', true, 'coreg', true, 'invert', true);  %define default values
+defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB',...
+    'patch_size',0.4, 'surf_dir', '', 'mri_dir', '', 'init', true,...
+    'coreg', true, 'invert', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
 end
-if length(params.surf_dir)==0
+if isempty(params.surf_dir)
     params.surf_dir=fullfile(params.data_dir,'surf');
 end
-if length(params.mri_dir)==0
+if isempty(params.mri_dir)
     params.mri_dir=fullfile(params.data_dir,'mri');
 end
 
 data_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session_num));
-data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', zero_event, session_num));
+data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', contrast.zero_event, session_num));
 
 % Create directory for inversion results
-foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], zero_event, ['f' num2str(foi(1)) '_' num2str(foi(2))]);
+foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
 if exist(foi_dir,'dir')~=7
     mkdir(foi_dir);
 end
 coreg_file_name=fullfile(foi_dir, sprintf('%s_%d.mat', subj_info.subj_id, session_num));
 removed_file_name=fullfile(foi_dir, sprintf('r%s_%d.mat', subj_info.subj_id, session_num));
-%bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session_num));
+bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session_num));
 
 spm('defaults', 'EEG');
 spm_jobman('initcfg'); 
@@ -51,20 +53,19 @@ if params.init
     batch_idx=batch_idx+1;
 
     %%%%%% BASELINE CORRECT %%%%%%%%
-    %matlabbatch{batch_idx}.spm.meeg.preproc.bc.D = {removed_file_name};
-    %matlabbatch{batch_idx}.spm.meeg.preproc.bc.timewin = baseline;
-    %matlabbatch{batch_idx}.spm.meeg.preproc.bc.prefix = 'b';
-    %batch_idx=batch_idx+1;
+    matlabbatch{batch_idx}.spm.meeg.preproc.bc.D = {removed_file_name};
+    matlabbatch{batch_idx}.spm.meeg.preproc.bc.timewin = contrast.baseline_woi;
+    matlabbatch{batch_idx}.spm.meeg.preproc.bc.prefix = 'b';
     
     spm_jobman('run', matlabbatch);
 
     % Relabel trials to all be same condition
-    load(removed_file_name);
-    D.condlist={zero_event};
+    load(bc_file_name);
+    D.condlist={contrast.zero_event};
     for trial_idx=1:length(D.trials)
-        D.trials(trial_idx).label=zero_event;
+        D.trials(trial_idx).label=contrast.zero_event;
     end
-    save(removed_file_name,'D');
+    save(bc_file_name,'D');
     
 end
 
@@ -75,7 +76,7 @@ if params.coreg
     batch_idx=1;
 
     % Coregister with surface
-    matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {removed_file_name};
+    matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {bc_file_name};
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = 'grey';
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.mri_dir,[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
@@ -102,21 +103,20 @@ if params.invert
     clear jobs
     matlabbatch={};
     batch_idx=1;
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.D = {removed_file_name};
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.D = {bc_file_name};
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.val = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.whatconditions.all = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invfunc = 'Classic';
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invtype = params.inv_type;
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.woi = woi;
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.foi = foi;
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.woi = contrast.invwoi;
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.foi = contrast.foi;
+    %matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.hanning = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.hanning = 0;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.isfixedpatch.randpatch.npatches = 512;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.isfixedpatch.randpatch.niter = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.patchfwhm = params.patch_size;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.mselect = 0;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.nsmodes = 180;
-    %matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.umodes = 'C:\RAW_TDCS_data\Analysis_020715\GB\Ugeneric.mat';
-    %matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.ntmodes = 0;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.ntmodes = 16;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.priors.priorsmask = {''};
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.priors.space = 1;
@@ -125,4 +125,5 @@ if params.invert
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.outinv = '';
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.modality = {'MEG'};
     spm_jobman('run',matlabbatch);
+               
 end
