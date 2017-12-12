@@ -9,12 +9,10 @@ for f = fieldnames(defaults)',
 end
 
 load(fullfile('C:\pred_coding\scanning\', subj_info.subj_id, ...
-    num2str(session_num), sprintf('data_%s_%d.mat', subj_info.subj_id,...
-    run_num)));
+    num2str(session_num), sprintf('data_%d.mat', run_num)));
 
 load(fullfile('C:\pred_coding\scanning\', subj_info.subj_id, ...
-    num2str(session_num), sprintf('stim_%s_%d.mat', subj_info.subj_id,...
-    run_num)));
+    num2str(session_num), sprintf('stim_%d.mat', run_num)));
 
 % Correct for left/right mismatch
 stim.trials(:,1)=1+2-stim.trials(:,1);
