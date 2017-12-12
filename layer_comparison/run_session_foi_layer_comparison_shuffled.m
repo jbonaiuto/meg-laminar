@@ -1,4 +1,3 @@
-
 function run_session_foi_layer_comparison_shuffled(subj_info, session_num,...
     contrast, shuff_idx, varargin)
 

@@ -36,7 +36,7 @@ resp_run_files={};
 
 tpl = template('templates/','keep');
 tpl = set(tpl,'file',{'session'},{'session_template.tpl'});
-tpl = set(tpl,'var',{'PAGETITLE'},{sprintf('%s%s: Session %d', subj_info.subj_id, subj_info.birth_date, session_num)});
+tpl = set(tpl,'var',{'PAGETITLE'},{sprintf('%s: Session %d', subj_info.subj_id, session_num)});
     
 run_list='<ul>';
 for run_num=1:subj_info.sessions(session_num)
@@ -47,17 +47,17 @@ for run_num=1:subj_info.sessions(session_num)
         run_num); 
     run_tpl = template('templates/','keep');
     run_tpl = set(run_tpl,'file',{'run'},{'run_template.tpl'});
-    run_tpl = set(run_tpl,'var',{'PAGETITLE'},{sprintf('%s%s: Session %d - Run %d', subj_info.subj_id, subj_info.birth_date, session_num, run_num)});
+    run_tpl = set(run_tpl,'var',{'PAGETITLE'},{sprintf('%s: Session %d - Run %d', subj_info.subj_id, session_num, run_num)});
 
 
     % Directory containing run data
-    run_code=[subj_info.subj_id subj_info.birth_date '_JamesBonaiuto_' subj_info.scan_date{session_num} '_0' num2str(run_num)];
+    run_code=[subj_info.subj_id '_JamesBonaiuto_' subj_info.scan_date{session_num} '_0' num2str(run_num)];
     run_dir=fullfile(session_dir, [run_code '.ds']);
 
     % File containing stimulus information for each trial
-    stim_file=fullfile(session_dir, ['stim_' subj_info.subj_id '_' num2str(run_num) '.mat']);
+    stim_file=fullfile(session_dir, ['stim_' num2str(run_num) '.mat']);
     % File containing behavioral data from each trial
-    data_file=fullfile(session_dir, ['data_' subj_info.subj_id '_' num2str(run_num) '.mat']);
+    data_file=fullfile(session_dir, ['data_' num2str(run_num) '.mat']);
 
     spm_filename=sprintf('%d-%d.mat',session_num,run_num);
   
@@ -146,7 +146,7 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {fullfile(analysis_dir, sprintf('fdf%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = '';
-        matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.data_dir,'mri',[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
+        matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.data_dir,'mri',subj_info.subj_id, [subj_info.headcast_t1 ',1'])};
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshres = 2;
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.coregistration.coregspecify.fiducial(1).fidname = 'nas';
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.coregistration.coregspecify.fiducial(1).specification.type = subj_info.nas;

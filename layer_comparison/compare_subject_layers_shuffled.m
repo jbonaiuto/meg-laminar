@@ -14,10 +14,10 @@ if length(params.surf_dir)==0
 end
 
 % Get map from white matter to pial surface
-orig_white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','white.hires.deformed.surf.gii');
-white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed.surf.gii');
-orig_pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','pial.hires.deformed.surf.gii');
-pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed.surf.gii');
+orig_white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','white.hires.deformed.surf.gii');
+white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','ds_white.hires.deformed.surf.gii');
+orig_pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','pial.hires.deformed.surf.gii');
+pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','ds_pial.hires.deformed.surf.gii');
 
 pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
     'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);

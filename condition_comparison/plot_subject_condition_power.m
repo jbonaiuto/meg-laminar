@@ -57,8 +57,8 @@ for session_num=1:length(subj_info.sessions)
     % Load behavior files
     session_responses=[];
     for run_idx=1:subj_info.sessions(session_num)
-        load(fullfile('C:/pred_coding/scanning', subj_info.subj_id, num2str(session_num), sprintf('data_%s_%d.mat', subj_info.subj_id, run_idx)));
-        load(fullfile('C:/pred_coding/scanning', subj_info.subj_id, num2str(session_num), sprintf('stim_%s_%d.mat', subj_info.subj_id, run_idx)));
+        load(fullfile('C:/pred_coding/scanning', subj_info.subj_id, num2str(session_num), sprintf('data_%d.mat', run_idx)));
+        load(fullfile('C:/pred_coding/scanning', subj_info.subj_id, num2str(session_num), sprintf('stim_%d.mat', run_idx)));
         if strcmp(subj_info.subj_id,'ad') && session_num==4 && run_idx==1
             data.responses=data.responses(8:end,:);
             stim.trials=stim.trials(8:end,:);
@@ -271,60 +271,5 @@ if params.plot
     figure2eps(fig, fullfile(out_dir, sprintf('%s-wm_woi.eps', contrast.comparison_name)), 10, '-opengl');
     saveas(fig, fullfile(out_dir, sprintf('%s-wm_woi.png', contrast.comparison_name)), 'png');  
 
-%     fid=fopen(fullfile(out_dir, sprintf('%s_stats.txt',contrast.comparison_name)),'w');
-
-%     % Pial - wm (all)
-%     [h,p,ci,stats]=ttest2(cond_results.pial_trials_woi('all'), cond_results.wm_trials_woi('all'));
-%     stat_str=sprintf('pial (all) - wm (all): t=%.3f, dof=%d, p=%.5f\n\n', stats.tstat, stats.df, p);
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % correct - incorrect (pial)
-%     [h,p,ci,stats]=ttest2(cond_results.pial_trials_woi('correct'), cond_results.pial_trials_woi('incorrect'));
-%     stat_str=sprintf('correct (pial) - incorrect (pial): t=%.3f, dof=%d, p=%.5f\n\n', stats.tstat, stats.df, p);
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % correct - incorrect (wm)
-%     [h,p,ci,stats]=ttest2(cond_results.wm_trials_woi('correct'), cond_results.wm_trials_woi('incorrect'));
-%     stat_str=sprintf('correct (wm) - incorrect (wm): t=%.3f, dof=%d, p=%.5f\n\n', stats.tstat, stats.df, p);
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % coherence conditions (pial)
-%     [p,tbl,stats,c,m]=oneway_unbalanced_anova(cond_results.pial_trials_woi, coherence_conditions);
-%     stat_str=sprintf('coherence conditions (pial), p=%.5f\nlow-med, p=%.3f\nlow-high, p=%.3f\nmed-high, p=%.3f\n\n', p, c(1,6), c(2,6), c(3,6));
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % coherence conditions (wm)
-%     [p,tbl,stats,c,m]=oneway_unbalanced_anova(cond_results.wm_trials_woi, coherence_conditions);
-%     stat_str=sprintf('coherence conditions (wm), p=%.5f\nlow-med, p=%.3f\nlow-high, p=%.3f\nmed-high, p=%.3f\n\n', p, c(1,6), c(2,6), c(3,6));
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % congruence conditions (pial)
-%     [h,p,ci,stats]=ttest2(cond_results.pial_trials_woi('congruent'), cond_results.pial_trials_woi('incongruent'));
-%     stat_str=sprintf('congruent (pial) - incongruent (pial): t=%.3f, dof=%d, p=%.5f\n\n', stats.tstat, stats.df, p);
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % congruence conditions (wm)
-%     [h,p,ci,stats]=ttest2(cond_results.wm_trials_woi('congruent'), cond_results.wm_trials_woi('incongruent'));
-%     stat_str=sprintf('congruent (wm) - incongruent (wm): t=%.3f, dof=%d, p=%.5f\n\n', stats.tstat, stats.df, p);
-%     fprintf(fid, stat_str);
-% 
-%     % all conditions (pial)
-%     [p,tbl,stats,c,m]=twoway_unbalanced_anova(cond_results.pial_trials_woi, congruence_conditions, coherence_conditions);
-%     stat_str=sprintf('all conditions (pial)\ncongruence, p=%.3f\ncoherence, p=%.3f\ncongruence x coherence, p=%.3f\n\n', p(1), p(2), p(3));
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-% 
-%     % all conditions (wm)
-%     [p,tbl,stats,c,m]=twoway_unbalanced_anova(cond_results.wm_trials_woi, congruence_conditions, coherence_conditions);
-%     stat_str=sprintf('all conditions (wm)\ncongruence, p=%.3f\ncoherence, p=%.3f\ncongruence x coherence, p=%.3f\n\n', p(1), p(2), p(3));
-%     disp(stat_str);
-%     fprintf(fid, stat_str);
-%     fclose(fid);
 end
 cond_results.times=times(time_idx);
