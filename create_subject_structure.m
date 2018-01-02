@@ -1,7 +1,7 @@
 function [subs] = create_subject_structure()
 subs = struct();
 
-subs(1).subj_id = 'subj01';
+subs(1).subj_id = 'sub-01';
 subs(1).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_mmsMQ0484_orig.img';
 subs(1).mpm_t1 = 'anon_s2015-06-18_15-22-154522-00001-00224-1_T1w.nii';
 subs(1).nas=[9.9898 142.5147 -8.1787];
@@ -23,7 +23,7 @@ subs(1).camera_position=dict();
 subs(1).camera_position('topdown')=[18.4 57.27 1745];
 subs(1).camera_position('back')=[103.152 -1552.014 -736.475];
 
-subs(2).subj_id = 'subj02';
+subs(2).subj_id = 'sub-02';
 subs(2).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2014-10-07_14-18-142013-00001-00192-1.nii';
 subs(2).mpm_t1 = 'anon_s2014-10-07_14-18-145208-00001-00224-1_T1w.nii';
 subs(2).nas=[0.4000 117.3122 -9.6584];
@@ -45,7 +45,7 @@ subs(2).camera_position=dict();
 subs(2).camera_position('topdown')=[-15.84 -315.94 1685.15];
 subs(2).camera_position('back')=[52.76 -1680.78 -150.43];
 
-subs(3).subj_id = 'subj03';
+subs(3).subj_id = 'sub-03';
 subs(3).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2014-10-02_12-11-121418-00001-00192-1.nii';
 subs(3).mpm_t1 = 'anon_s2014-10-02_12-11-124515-00001-00224-1_T1w.nii';
 subs(3).nas=[2.5710 111.5040 20.5150];
@@ -67,7 +67,7 @@ subs(3).camera_position=dict();
 subs(3).camera_position('topdown')=[-30.93 -352.1 1707];
 subs(3).camera_position('back')=[-109.70 -1645.32 -325.10];
 
-subs(4).subj_id = 'subj04';
+subs(4).subj_id = 'sub-04';
 subs(4).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2014-10-08_11-09-111650-00001-00192-1.nii';
 subs(4).mpm_t1 = 'anon_s2014-10-08_11-09-114810-00001-00224-1_T1w.nii';
 subs(4).nas=[-6.7000 120.9000 -14.8000];
@@ -89,7 +89,7 @@ subs(4).camera_position=dict();
 subs(4).camera_position('topdown')=[7.056 -843 1525];
 subs(4).camera_position('back')=[32.37 -1532.98 -304.14];
 
-subs(5).subj_id = 'subj05';
+subs(5).subj_id = 'sub-05';
 subs(5).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2014-10-10_16-08-161009-00001-00192-1.nii';
 subs(5).mpm_t1 = 'anon_s2014-10-10_16-08-163926-00001-00224-1_T1w.nii';
 subs(5).nas=[-5.5930 109.1525 16.5860];
@@ -111,7 +111,7 @@ subs(5).camera_position=dict();
 subs(5).camera_position('topdown')=[10.36 -252.4 1729];
 subs(5).camera_position('back')=[137.146 -1631.08 146.89];
 
-subs(6).subj_id = 'subj06';
+subs(6).subj_id = 'sub-06';
 subs(6).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2014-10-09_14-47-144933-00001-00192-1.nii';
 subs(6).mpm_t1 = 'anon_s2014-10-09_14-47-151855-00001-00224-1_T1w.nii';
 subs(6).nas=[4.6030 109.0934 26.2327];
@@ -133,7 +133,7 @@ subs(6).camera_position=dict();
 subs(6).camera_position('topdown')=[-27.01 -598 1639];
 subs(6).camera_position('back')=[-33.77 -1599.02 -193.16];
 
-subs(7).subj_id = 'subj07';
+subs(7).subj_id = 'sub-07';
 subs(7).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2015-06-09_11-44-114620-00001-00192-1.nii';
 subs(7).mpm_t1 = 'anon_s2015-06-09_11-44-121745-00001-00224-1_T1w.nii';
 subs(7).nas=[-9.4100 110.0300 9.3589];
@@ -155,7 +155,7 @@ subs(7).camera_position=dict();
 subs(7).camera_position('topdown')=[11.44 -484.1 1677];
 subs(7).camera_position('back')=[111.15 -1663.22 -202.43];
 
-subs(8).subj_id = 'subj08';
+subs(8).subj_id = 'sub-08';
 subs(8).headcast_t1 = 'pd_nw_mtflash3d_v3e_HeadCast_12ch_0002/anon_s2014-10-03_15-14-151946-00001-00192-1.nii';
 subs(8).mpm_t1 = 'anon_s2014-10-03_15-14-155029-00001-00224-1_T1w.nii';
 subs(8).nas=[12.9130 110.7524 9.6484];
