@@ -1,23 +1,20 @@
 function compare_subject_layers(subj_info, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'save_results', true,...
-    'inv_type','EBB','patch_size', 5.0, 'surf_dir','', 'filter_sessions', true);  %define default values
+defaults = struct('data_dir', 'd:/pred_coding/derivatives/spm12', 'save_results', true,...
+    'inv_type','EBB','patch_size', 5.0, 'surf_dir','D:/pred_coding/derivatives/freesurfer', 'filter_sessions', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
 end
-if length(params.surf_dir)==0
-    params.surf_dir=fullfile(params.data_dir,'surf');
-end
 
 % Get map from white matter to pial surface
-orig_white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','white.hires.deformed.surf.gii');
-white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','ds_white.hires.deformed.surf.gii');
-orig_pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','pial.hires.deformed.surf.gii');
-pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'surf','ds_pial.hires.deformed.surf.gii');
+orig_white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'white.hires.deformed.surf.gii');
+white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'ds_white.hires.deformed.surf.gii');
+orig_pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'pial.hires.deformed.surf.gii');
+pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'ds_pial.hires.deformed.surf.gii');
 
 pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
     'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);
@@ -28,7 +25,7 @@ pial_baseline=[];
 white_baseline=[];
 
 for session_num=1:length(subj_info.sessions)
-    foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
+    foi_dir=fullfile(params.data_dir, subj_info.subj_id, sprintf('ses-0%d',session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
 
     baseline_dir=fullfile(foi_dir,['t' num2str(contrast.baseline_woi(1)) '_' num2str(contrast.baseline_woi(2))]);
     session_pial_baseline=load_woi_trials(baseline_dir, ['pial_br' subj_info.subj_id '_' num2str(session_num) '_1_'], contrast.baseline_woi, contrast.foi, nvertices);
@@ -41,7 +38,7 @@ end
 pial_vals=[];
 white_vals=[];
 for session_num=1:length(subj_info.sessions)
-    foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
+    foi_dir=fullfile(params.data_dir, subj_info.subj_id, sprintf('ses-0%d',session_num), 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
     woi_dir=fullfile(foi_dir,['t' num2str(contrast.comparison_woi(1)) '_' num2str(contrast.comparison_woi(2))]);
     session_pial_vals=load_woi_trials(woi_dir, ['pial_br' subj_info.subj_id '_' num2str(session_num) '_1_'], contrast.comparison_woi, contrast.foi, nvertices);
     session_white_vals=load_woi_trials(woi_dir, ['white_br' subj_info.subj_id '_' num2str(session_num) '_1_'], contrast.comparison_woi, contrast.foi, nvertices);
@@ -50,7 +47,7 @@ for session_num=1:length(subj_info.sessions)
     white_vals(:,end+1:end+ntrials)=session_white_vals;
 end
 
-foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
+foi_dir=fullfile(params.data_dir, subj_info.subj_id, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
 mkdir(foi_dir);
 
 pial_diff=pial_vals-pial_baseline;

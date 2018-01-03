@@ -1,7 +1,7 @@
 function run_all_session_coregerr(subj_info, session_num, contrasts, varargin)
 
-defaults = struct('data_dir', 'd:/pred_coding', 'inv_type', 'EBB',...
-    'patch_size',0.4, 'surf_dir', '', 'mri_dir', '',... 
+defaults = struct('data_dir', 'd:/pred_coding/derivatives/spm12', 'inv_type', 'EBB',...
+    'patch_size',0.4, 'surf_dir', 'd:/pred_coding/derivatives/freesurfer', 'mri_dir', 'd:/pred_coding',... 
     'invert',true, 'extract', true, 'compare', true, 'iterations',10,...
     'shift_magnitude', 10 ,'shift_var', 2.5,...
     'rotation_magnitude', 10, 'rotation_var', 2.5);  %define default values
@@ -10,12 +10,6 @@ for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
-end
-if length(params.mri_dir)==0
-    params.mri_dir=fullfile(params.data_dir,'mri');
-end
-if length(params.surf_dir)==0
-    params.surf_dir=fullfile(params.data_dir,'surf');
 end
 
 orig_nas=subj_info.nas;

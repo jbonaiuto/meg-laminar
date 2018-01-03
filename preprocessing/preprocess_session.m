@@ -1,7 +1,7 @@
 function preprocess_session(subj_info, session_num, varargin)
 
-defaults = struct('data_dir', '/data/pred_coding', ...
-    'url_prefix', 'http://fortressofjollitude.zapto.org/', 'convert',true, ...
+defaults = struct('data_dir', 'd:\pred_coding\', ...
+    'url_prefix', 'http://localhost/', 'convert',true, ...
     'filter', true, 'remove_blinks', true, 'epoch', true, 'delete_last_resp', false, ...
     'highpass_freq',2.0,'downsample',250,'lowpass_freq',100.0,'instr_epoch',[-3500 1500],'resp_epoch',[-2000 2000], ...
     'blink_channel','MLT31','manual_reject',false);  %define default values
@@ -16,9 +16,9 @@ end
 addpath C:/users/jbonai/Documents/MATLAB/m2html/
     
 % Directory containing session data
-session_dir=fullfile(params.data_dir,'scanning', subj_info.subj_id, num2str(session_num));
+session_dir=fullfile(params.data_dir,subj_info.subj_id, sprintf('ses-0%d',session_num));
 % Directory to put results
-analysis_dir=fullfile(params.data_dir,'analysis',subj_info.subj_id,num2str(session_num));
+analysis_dir=fullfile(params.data_dir,'derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num));
 if exist(analysis_dir,'dir')~=7
     mkdir(analysis_dir);
 end
@@ -43,7 +43,7 @@ for run_num=1:subj_info.sessions(session_num)
     
     run_list=sprintf('%s<li><a href="%s%s">Run %d</a></li>', run_list, ...
         params.url_prefix, ...
-        sprintf('analysis/%s/%d/preprocessing/preprocessing-%d.html',subj_info.subj_id,session_num,run_num),...
+        sprintf('derivatives/spm12/%s/ses-0%d/preprocessing/preprocessing-%d.html',subj_info.subj_id,session_num,run_num),...
         run_num); 
     run_tpl = template('templates/','keep');
     run_tpl = set(run_tpl,'file',{'run'},{'run_template.tpl'});
@@ -78,20 +78,20 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.convert.inputformat = 'autodetect';
         spm_jobman('run',matlabbatch);
 
-        file_path=fullfile('analysis',subj_info.subj_id,num2str(session_num),'preprocessing',sprintf('fiducial_coils-%d.png',run_num));
+        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('fiducial_coils-%d.png',run_num));
         plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event',false,'lim_jump',false,'output_file', fullfile(params.data_dir,file_path));
         run_tpl = set(run_tpl, 'var', {'FIDUCIALSRC'}, {[params.url_prefix file_path]});
 
-        file_path=fullfile('analysis',subj_info.subj_id,num2str(session_num),'preprocessing',sprintf('fiducial_coils_lastevent-%d.png',run_num));
+        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('fiducial_coils_lastevent-%d.png',run_num));
         plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event',true,'lim_jump',false, 'output_file', fullfile(params.data_dir,file_path));
         run_tpl = set(run_tpl, 'var', {'FIDUCIALLASTEVENTSRC'}, {[params.url_prefix file_path]});
 
-        file_path=fullfile('analysis',subj_info.subj_id,num2str(session_num),'preprocessing',sprintf('fiducial_coils_nojump-%d.png',run_num));
+        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('fiducial_coils_nojump-%d.png',run_num));
         plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event', false, 'lim_jump', true, 'output_file', fullfile(params.data_dir,file_path));
         run_tpl = set(run_tpl, 'var', {'FIDUCIALNOJUMPSRC'}, {[params.url_prefix file_path]});
     
         % Correct event timings, adjust initial events
-        file_path=fullfile('analysis',subj_info.subj_id,num2str(session_num),'preprocessing',sprintf('diode-%d.png',run_num));
+        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('diode-%d.png',run_num));
         [num_diode_onsets num_dots_evts num_instr_evts num_resp_evts]=adjust_run_events(subj_info, session_num, run_num, 'data_dir', params.data_dir, 'plot_diode',true,...
             'output_file', fullfile(params.data_dir,file_path), 'delete_last_resp',params.delete_last_resp,'delete_no_resp',true);
         run_tpl = set(run_tpl,'var',{'DIODECHANNEL','DIODEONSETS','DIODETHRESH','DIODESRC','DOTSEVENTS','INSTREVENTS','RESPEVENTS'},{num2str(subj_info.diode_ch(session_num)),...
@@ -146,7 +146,7 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {fullfile(analysis_dir, sprintf('fdf%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = '';
-        matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.data_dir,'mri',subj_info.subj_id, [subj_info.headcast_t1 ',1'])};
+        matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.data_dir,subj_info.subj_id,'anat',[subj_info.headcast_t1 ',1'])};
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshres = 2;
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.coregistration.coregspecify.fiducial(1).fidname = 'nas';
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.coregistration.coregspecify.fiducial(1).specification.type = subj_info.nas;
@@ -219,7 +219,7 @@ for run_num=1:subj_info.sessions(session_num)
 
         run_tpl = set(run_tpl,'var',{'BLINKSREMOVED'},{['TRUE (' params.blink_channel ')']});
         Fgraph = spm_figure('GetWin','Graphics');
-        file_path=fullfile('analysis',subj_info.subj_id,num2str(session_num),'preprocessing',sprintf('blink_component-%d.png',run_num));
+        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('blink_component-%d.png',run_num));
         saveas(Fgraph, fullfile(params.data_dir, file_path));
         run_tpl = set(run_tpl,'var',{'BLINKCMPNTSRC'},{[params.url_prefix file_path]});
     end

@@ -1,7 +1,7 @@
 function [pial_roi_trials,wm_roi_trials,pial_roi_bc_trials,wm_roi_bc_trials,times,freqs]=compute_condition_power(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding','surf_dir', 'D:/pred_coding/surf','inv_type','EBB',...
+defaults = struct('data_dir','d:/pred_coding/derivatives/spm12','surf_dir', 'D:/pred_coding/derivatives/freesurfer','inv_type','EBB',...
     'patch_size',0.4,'thresh_percentile',80,'roi_type','mean','recompute',false,...
     'recompute_roi',false);  %define default values
 params = struct(varargin{:});
@@ -13,7 +13,7 @@ end
 
 freqs=[contrast.foi(1)-5:contrast.foi(2)+5];
 
-grey_coreg_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg');
+grey_coreg_dir=fullfile(params.data_dir,subj_info.subj_id, sprintf('ses-0%d',session_num), 'grey_coreg');
 foi_dir=fullfile(grey_coreg_dir, params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
 
 pial_data_filename=fullfile(foi_dir, sprintf('pial.%s.roi_rtf.mat', contrast.comparison_name));
@@ -43,7 +43,7 @@ else
         case 'positive'
             thresh_type='lower';
     end
-
+	
     spm('defaults','eeg');
 
     orig_white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'white.hires.deformed.surf.gii');
@@ -59,13 +59,13 @@ else
     pial_hemisphere_map=get_hemisphere_map(pial_mesh, orig_pial_mesh);
     white_hemisphere_map=get_hemisphere_map(white_mesh, orig_white_mesh);
 
-    foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-            num2str(session_num), 'grey_coreg', params.inv_type,....
+    foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
+            sprintf('ses-0%d', session_num), 'grey_coreg', params.inv_type,....
             ['p' num2str(params.patch_size)], contrast.zero_event,...
             ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
     lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, session_num));
 
-    grey_coreg_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session_num), 'grey_coreg');
+    grey_coreg_dir=fullfile(params.data_dir, subj_info.subj_id, sprintf('ses-0%d',session_num), 'grey_coreg');
     foi_dir=fullfile(grey_coreg_dir, params.inv_type, ['p' num2str(params.patch_size)], contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
 
     % Get ROI

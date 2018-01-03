@@ -20,7 +20,7 @@ for subj_idx=1:length(subjects)
     session_init_rpa=[];
     for session_num=1:length(subj_info.sessions)
         for run_num=1:subj_info.sessions(session_num)
-            analysis_dir=fullfile('d:/','pred_coding','analysis', subj_info.subj_id, num2str(session_num));
+            analysis_dir=fullfile('d:/pred_coding/derivatives/spm12',subj_info.subj_id, sprintf('ses-0%d',session_num));
             
             load(fullfile(analysis_dir, sprintf('mvmt_%d.mat',run_num)), 'mvmt');
                 

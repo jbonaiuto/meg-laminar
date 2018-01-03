@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('D:\pred_coding\derivatives\spm12', subj_info.subj_id);
 
 conditions={'congruent-low','congruent-med','congruent-high',...
     'incongruent-low','incongruent-med','incongruent-high'};
@@ -20,7 +20,7 @@ instr_session_mean_tfs=[];
 resp_session_mean_tfs=[];
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     tf_dir=fullfile(session_dir,sprintf('rtf_dotstf_rcinstr_Tafdf%d',session_num));
     session_tfs=[];
     for cond_idx=1:length(conditions)
@@ -53,7 +53,7 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     tf_dir=fullfile(session_dir,sprintf('rtf_instrtf_rcinstr_Tafdf%d',session_num));
     session_tfs=[];
     for cond_idx=1:length(conditions)
@@ -86,7 +86,7 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     tf_dir=fullfile(session_dir,sprintf('rtf_rcresp_Tafdf%d',session_num));
     session_tfs=[];
     for cond_idx=1:length(conditions)

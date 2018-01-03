@@ -1,8 +1,7 @@
 function extract_inversion_source(subj_info, session_num, contrast, foi_dir, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB',...
-    'patch_size',0.4,'surf_dir','d:/pred_coding/surf');  %define default values
+defaults = struct();  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),

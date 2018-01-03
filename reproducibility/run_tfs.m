@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('d:\pred_coding\derivatives\spm12', subj_info.subj_id);
 
 dots_tf_woi=[-3500 -1000];
 dots_baseline=[-3000 -2500];
@@ -22,7 +22,7 @@ resp_tf_woi=[-1500 1500];
 resp_baseline=[-3000 -2500];
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
@@ -48,7 +48,7 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
@@ -71,7 +71,7 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs

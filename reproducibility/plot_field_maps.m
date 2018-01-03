@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('D:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('D:\pred_coding\derivatives\spm12', subj_info.subj_id);
 
 dots_t=-2350;
 instr_t=150;
@@ -28,7 +28,7 @@ resp_min_val=inf;
 resp_max_val=-inf;
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     
     instr_file=fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num));
     instr_data=spm_eeg_load(instr_file);
