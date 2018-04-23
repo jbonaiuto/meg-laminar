@@ -1,4 +1,4 @@
-function run_all_session_coregerr(subj_info, session_num, contrasts, varargin)
+function run_all_session(subj_info, session_num, contrasts, varargin)
 
 defaults = struct('data_dir', 'd:/pred_coding', 'inv_type', 'EBB',...
     'patch_size',0.4, 'surf_dir', '', 'mri_dir', '',... 
@@ -17,6 +17,8 @@ end
 if length(params.surf_dir)==0
     params.surf_dir=fullfile(params.data_dir,'surf');
 end
+
+addpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
 
 orig_nas=subj_info.nas;
 orig_lpa=subj_info.lpa;
@@ -44,10 +46,12 @@ for idx=1:params.iterations
     
     for i=1:length(contrasts)
         contrast=contrasts(i);
-        run_session_foi_layer_comparison_coregerr(subj_info, session_num,...
+        run_session_foi_layer_comparison(subj_info, session_num,...
             contrast, idx, 'data_dir', params.data_dir, 'inv_type', params.inv_type,...
             'patch_size',params.patch_size, 'surf_dir', params.surf_dir,...
             'mri_dir', params.mri_dir, 'invert',params.invert,'extract', params.extract,...
             'compare', params.compare, 'shift_magnitude', params.shift_magnitude);
     end        
 end
+
+rmpath('D:\pred_coding\src\matlab\analysis\layer_comparison');

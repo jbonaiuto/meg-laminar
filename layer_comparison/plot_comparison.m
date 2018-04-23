@@ -77,7 +77,7 @@ end
 
 if length(params.t_limits)==0
     params.t_limits=get_pial_wm_limits(pial_t_data(params.pial_mask), ...
-        wm_t_data(params.wm_mask), 'clip_vals', true, 'symmetric', false);
+        wm_t_data(params.wm_mask), 'clip_vals', true, 'symmetric', true);
 end
 t_limits=params.t_limits;
 if length(params.pial_wm_t_limits)==0
@@ -87,13 +87,11 @@ end
 pial_wm_t_limits=params.pial_wm_t_limits;
 if length(params.diff_limits)==0
     params.diff_limits=get_pial_wm_limits(mean(pial_diff_data(params.pial_mask,:),2), ...
-        mean(wm_diff_data(params.wm_mask,:),2), 'clip_vals', false, 'symmetric', false);        
-        
-    
+        mean(wm_diff_data(params.wm_mask,:),2), 'clip_vals', true, 'symmetric', true);                    
 end
 if length(params.pial_wm_diff_limits)==0
     params.pial_wm_diff_limits=get_metric_limits(mean(pial_wm_diff_data(params.mask,:),2),...
-        'clip_vals', false, 'symmetric', true);
+        'clip_vals', true, 'symmetric', true);
 end
 diff_limits=params.diff_limits;
 pial_wm_diff_limits=params.pial_wm_diff_limits;

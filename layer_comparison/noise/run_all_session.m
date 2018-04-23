@@ -1,4 +1,4 @@
-function run_all_session_noise(subjects, contrasts, varargin)
+function run_all_session(subjects, contrasts, varargin)
 
 defaults = struct('data_dir', 'd:/pred_coding', 'inv_type', 'EBB',...
     'patch_size',0.4, 'surf_dir', '', 'iterations',10,... %'step_size',100,...
@@ -67,14 +67,11 @@ for i=1:length(contrasts)
         pial_diff=[];
         white_diff=[];               
 
-        good_sessions=[1:length(subj_info.sessions)];
-        good_sessions=setdiff(good_sessions,subj_info.exclude_sessions(contrast.comparison_name));
-        
         foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-            num2str(good_sessions(1)), 'grey_coreg', params.inv_type,...
+            num2str(subj_info.sessions(1)), 'grey_coreg', params.inv_type,...
             ['p' num2str(params.patch_size)], contrast.zero_event,...
             sprintf('f%d_%d', contrast.foi(1), contrast.foi(2)));
-        lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, good_sessions(1)));
+        lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, subj_info.sessions(1)));
         D=spm_eeg_load(lfn_filename);
         pial_lfn=sqrt(sum(D.inv{1}.inverse.L(:,nvertices+1:end).^2,1))';
         pial_lfn=spm_mesh_smooth(pial, pial_lfn, 20);
@@ -82,7 +79,7 @@ for i=1:length(contrasts)
         wm_lfn=spm_mesh_smooth(wm, wm_lfn, 20);        
         mapped_wm_lfn=wm_lfn(pial_white_map);
         
-        for session_num=good_sessions
+        for session_num=1:length(subj_info.sessions)
             foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
                 num2str(session_num), 'grey_coreg', params.inv_type,...
                 ['p' num2str(params.patch_size)], contrast.zero_event,...

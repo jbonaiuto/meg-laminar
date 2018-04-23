@@ -1,5 +1,5 @@
 
-function run_session_foi_layer_comparison_shuffled(subj_info, session_num,...
+function run_session_foi_layer_comparison(subj_info, session_num,...
     contrast, shuff_idx, varargin)
 
 % Parse inputs
@@ -15,11 +15,12 @@ end
 if length(params.surf_dir)==0
     params.surf_dir=fullfile(params.data_dir,'surf');
 end
+addpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
 
 spm('defaults','eeg');
 
 if params.invert
-    invert_grey_shuffled(subj_info, session_num, contrast,...
+    invert_grey(subj_info, session_num, contrast,...
         shuff_idx, 'data_dir', params.data_dir, 'inv_type', params.inv_type,...
         'patch_size',params.patch_size, 'surf_dir', params.surf_dir,...
         'mri_dir', params.mri_dir);
@@ -48,3 +49,5 @@ delete(fullfile(foi_dir,sprintf('br%s_%d.dat',subj_info.subj_id,session_num)));
 delete(fullfile(foi_dir,sprintf('br%s_%d.mat',subj_info.subj_id,session_num)));
 delete(fullfile(foi_dir,sprintf('br%s_%d.surf.gii',subj_info.subj_id,session_num)));
 delete(fullfile(foi_dir,sprintf('SPMgainmatrix_br%s_%d_1.mat',subj_info.subj_id,session_num)));
+
+rmpath('D:\pred_coding\src\matlab\analysis\layer_comparison');

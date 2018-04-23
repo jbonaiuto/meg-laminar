@@ -1,15 +1,16 @@
-function plot_classification_results_subjects_coregerr(subjects, contrast, varargin)
+function plot_classification_results_subjects(subjects, contrast, varargin)
 
 % Parse inputs
 defaults = struct('data_dir','d:/pred_coding',...
     'surf_dir', 'D:/pred_coding/surf','inv_type','EBB',...
-    'patch_size',0.4,'recompute_roi',false,'iterations',10,'shift_magnitude',10);  %define default values
+    'patch_size',0.4,'recompute_roi',false,'iterations',10);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
 end
+addpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
 
 spm('defaults','eeg');
 
@@ -42,32 +43,24 @@ for subj_idx=1:length(subjects)
     pial_hemisphere_map=get_hemisphere_map(pial_mesh, orig_pial_mesh);
     white_hemisphere_map=get_hemisphere_map(white_mesh, orig_white_mesh);
     
-    good_sessions=[1:length(subj_info.sessions)];
-    good_sessions=setdiff(good_sessions,subj_info.exclude_sessions(contrast.comparison_name));
-
     foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-            num2str(good_sessions(1)), 'grey_coreg', params.inv_type,....
+            num2str(subj_info.sessions(1)), 'grey_coreg', params.inv_type,....
             ['p' num2str(params.patch_size)], contrast.zero_event,...
             ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
-    lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, good_sessions(1)));    
+    lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, subj_info.sessions(1)));    
     
-    orig_foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-                'grey_coreg', params.inv_type,....
-                ['p' num2str(params.patch_size)], contrast.zero_event,...
-                ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
-    
-    for idx=1:params.iterations
+    for shuf_idx=1:params.iterations
         foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
                 'grey_coreg', params.inv_type,....
                 ['p' num2str(params.patch_size)], contrast.zero_event,...
                 ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
-                'coregerr', num2str(params.shift_magnitude), num2str(idx));
-        % Get mean pial-wm diff
+                'shuffled', num2str(shuf_idx));
+        % Get mean pial-wm in ROI
         pial_wm_diff=gifti(fullfile(foi_dir,['pial-white.' contrast.comparison_name '.diff.gii']));
 
-        subj_dofs(subj_idx,idx)=size(pial_wm_diff.cdata(:,:),2)-1;
+        subj_dofs(subj_idx,shuf_idx)=size(pial_wm_diff.cdata(:,:),2)-1;
         
-        % whole brain                
+        % whole brain
         [pial_mask,wm_mask,mask]=compute_roi(subj_info, foi_dir, contrast.comparison_name, ...
             thresh_type, pial_mesh, white_mesh, pial_inflated, white_inflated, ...
             pial_white_map, white_pial_map, lfn_filename, 'thresh_percentile',0,...
@@ -75,37 +68,34 @@ for subj_idx=1:length(subjects)
             'pial_hemisphere_map', pial_hemisphere_map,...
             'white_hemisphere_map', white_hemisphere_map, 'recompute', params.recompute_roi);            
         pial_wm_roi_diff=mean(pial_wm_diff.cdata(mask,:));
-        % Perform ROI t-stat
         [tstat,p]=ttest_corrected(pial_wm_roi_diff','correction',25*var(pial_wm_roi_diff));
-        disp(sprintf('%s, %d, whole=%.3f',subj_info.subj_id,idx,tstat));
-        subject_whole_brain_tvals(subj_idx,idx)=tstat;
+        disp(sprintf('%s, %d, whole=%.3f',subj_info.subj_id,shuf_idx,tstat));
+        subject_whole_brain_tvals(subj_idx,shuf_idx)=tstat;
 
         % func ROI
-        thresh=80;
         [pial_mask,wm_mask,mask]=compute_roi(subj_info, foi_dir, contrast.comparison_name, ...
             thresh_type, pial_mesh, white_mesh, pial_inflated, white_inflated, ...
-            pial_white_map, white_pial_map, lfn_filename, 'thresh_percentile',thresh,...
+            pial_white_map, white_pial_map, lfn_filename, 'thresh_percentile',80,...
             'type','mean', 'region', '', 'hemisphere', '',...
             'pial_hemisphere_map', pial_hemisphere_map,...
             'white_hemisphere_map', white_hemisphere_map, 'recompute', params.recompute_roi);            
         pial_wm_roi_diff=mean(pial_wm_diff.cdata(mask,:));
-        % Perform ROI t-stat
         [tstat,p]=ttest_corrected(pial_wm_roi_diff','correction',25*var(pial_wm_roi_diff));
-        disp(sprintf('%s, %d, func=%.3f',subj_info.subj_id,idx,tstat));
-        subject_func_roi_tvals(subj_idx,idx)=tstat;
+        disp(sprintf('%s, %d, func=%.3f',subj_info.subj_id,shuf_idx,tstat));
+        subject_func_roi_tvals(subj_idx,shuf_idx)=tstat;
 
         % anat-func ROI
-        [pial_mask,wm_mask,mask]=compute_roi(subj_info, orig_foi_dir, contrast.comparison_name, ...
+        [pial_mask,wm_mask,mask]=compute_roi(subj_info, foi_dir, contrast.comparison_name, ...
             thresh_type, pial_mesh, white_mesh, pial_inflated, white_inflated, ...
-            pial_white_map, white_pial_map, lfn_filename, 'thresh_percentile',thresh,...
+            pial_white_map, white_pial_map, lfn_filename, 'thresh_percentile',80,...
             'type','mean', 'region', contrast.region, 'hemisphere', contrast.hemisphere,...
             'pial_hemisphere_map', pial_hemisphere_map,...
             'white_hemisphere_map', white_hemisphere_map, 'recompute', params.recompute_roi);            
         pial_wm_roi_diff=mean(pial_wm_diff.cdata(mask,:));
-        % Perform ROI t-stat
         [tstat,p]=ttest_corrected(pial_wm_roi_diff','correction',25*var(pial_wm_roi_diff));
-        disp(sprintf('%s, %d, anat-func=%.3f',subj_info.subj_id,idx,tstat));
-        subject_anatfunc_roi_tvals(subj_idx,idx)=tstat;    
+        disp(sprintf('%s, %d, anat-func=%.3f',subj_info.subj_id,shuf_idx,tstat));
+        subject_anatfunc_roi_tvals(subj_idx,shuf_idx)=tstat;    
+        
     end
 end
 
@@ -123,19 +113,16 @@ for subj_idx=1:length(subjects)
     subj_info=subjects(subj_idx);
     subj_ids{subj_idx}=num2str(subj_idx);
     
-    for idx=1:params.iterations   
-        % Whole brain bar
+    for idx=1:params.iterations                  
         tval=subject_whole_brain_tvals(subj_idx,idx);
         plot(subj_idx-.2,tval,'o');
 
-        % Func ROI bar
         tval=subject_func_roi_tvals(subj_idx,idx);
         plot(subj_idx,tval,'*');
 
-        % Anat-Func ROI bar
         tval=subject_anatfunc_roi_tvals(subj_idx,idx);
         plot(subj_idx+.2,tval,'+');
-    end
+    end    
 end
 set(gca,'XTick',1:length(subjects));
 set(gca,'XTickLabel',subj_ids);
@@ -151,6 +138,8 @@ set(gca,'Fontname','Arial');
 plot_dir=fullfile('C:\Users\jbonai\Dropbox\meg\pred_coding\plots\layer_comparison',...
         contrast.comparison_name);
 mkdir(plot_dir);
-saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_coregerr_%d.png', contrast.comparison_name, params.shift_magnitude)), 'png');
-saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_coregerr_%d.eps', contrast.comparison_name, params.shift_magnitude)), 'eps');
-saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_coregerr_%d.fig', contrast.comparison_name, params.shift_magnitude)), 'fig');
+saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_shuffled.png', contrast.comparison_name)), 'png');
+saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_shuffled.eps', contrast.comparison_name)), 'eps');
+saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_shuffled.fig', contrast.comparison_name)), 'fig');
+
+rmpath('D:\pred_coding\src\matlab\analysis\layer_comparison');

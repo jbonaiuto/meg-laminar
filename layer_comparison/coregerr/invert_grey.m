@@ -1,4 +1,4 @@
-function invert_grey_coregerr(subj_info, session_num, contrast, idx, varargin)
+function invert_grey(subj_info, session_num, contrast, idx, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', 'd:/pred_coding', 'inv_type', 'EBB',...

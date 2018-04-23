@@ -1,4 +1,4 @@
-function invert_grey_shuffled(subj_info, session_num, contrast, shuffled_idx, varargin)
+function invert_grey(subj_info, session_num, contrast, shuffled_idx, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', 'd:/pred_coding', 'inv_type', 'EBB',...

@@ -1,4 +1,4 @@
-function invert_grey_newsmooth(subj_info, session_num, contrast, varargin)
+function invert_grey(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB',...
