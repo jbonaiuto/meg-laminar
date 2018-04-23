@@ -11,12 +11,12 @@ hold all;
 for session_num=1:length(subj_info.sessions)
     for run_num=1:subj_info.sessions(session_num)
         % Directory containing session data
-        session_dir=fullfile('c:/','pred_coding','scanning', subj_info.subj_id, num2str(session_num));
+        session_dir=fullfile('d:/pred_coding',subj_info.subj_id, sprintf('ses-0%d',session_num));
         % Directory containing run data
         run_code=sprintf('%s%s_JamesBonaiuto_%s_0%d', subj_info.subj_id, subj_info.birth_date, subj_info.scan_date{session_num}, run_num);
         run_dir=fullfile(session_dir, sprintf('%s.ds', run_code));
         % Directory to put results
-        analysis_dir=fullfile('d:/','pred_coding','analysis', subj_info.subj_id, num2str(session_num));
+        analysis_dir=fullfile('d:/pred_coding/derivatives/spm12', subj_info.subj_id, sprintf('ses-0%d',session_num));
         mkdir(analysis_dir);
 
         % File containing original MEG data

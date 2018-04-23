@@ -1,7 +1,7 @@
 function cond_results=plot_subject_condition_power(subj_info, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding','surf_dir', 'D:/pred_coding/surf',...
+defaults = struct('data_dir','d:/pred_coding/derivatives/spm12','surf_dir', 'D:/pred_coding/derivatives/freesurfer',...
     'inv_type','EBB', 'patch_size',0.4,'filter_sessions',true,...
     'thresh_percentile',80,'roi_type','mean', 'recompute', false, 'recompute_roi',false,...
     'correct_only', true,'plot', true);  %define default values
@@ -57,8 +57,8 @@ for session_num=1:length(subj_info.sessions)
     % Load behavior files
     session_responses=[];
     for run_idx=1:subj_info.sessions(session_num)
-        load(fullfile('C:/pred_coding/scanning', subj_info.subj_id, num2str(session_num), sprintf('data_%s_%d.mat', subj_info.subj_id, run_idx)));
-        load(fullfile('C:/pred_coding/scanning', subj_info.subj_id, num2str(session_num), sprintf('stim_%s_%d.mat', subj_info.subj_id, run_idx)));
+        load(fullfile('C:/pred_coding/', subj_info.subj_id, sprintf('ses-0%d',session_num), 'behavior', sprintf('data_%d.mat', run_idx)));
+        load(fullfile('C:/pred_coding/', subj_info.subj_id, sprintf('ses-0%d',session_num), 'behavior', sprintf('stim_%d.mat', run_idx)));
         if strcmp(subj_info.subj_id,'ad') && session_num==4 && run_idx==1
             data.responses=data.responses(8:end,:);
             stim.trials=stim.trials(8:end,:);
@@ -75,7 +75,7 @@ for session_num=1:length(subj_info.sessions)
     end
     
     % Load coreg file - has condition labels
-    data_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session_num));
+    data_dir=fullfile(params.data_dir, subj_info.subj_id, sprintf('ses-0%d',session_num));
     data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', contrast.zero_event, session_num));
     foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)],...
         contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
@@ -271,6 +271,7 @@ if params.plot
     figure2eps(fig, fullfile(out_dir, sprintf('%s-wm_woi.eps', contrast.comparison_name)), 10, '-opengl');
     saveas(fig, fullfile(out_dir, sprintf('%s-wm_woi.png', contrast.comparison_name)), 'png');  
 
+<<<<<<< HEAD
 %     fid=fopen(fullfile(out_dir, sprintf('%s_stats.txt',contrast.comparison_name)),'w');
 
 %     % Pial - wm (all)
@@ -328,3 +329,4 @@ if params.plot
 %     fclose(fid);
 end
 cond_results.times=times(time_idx);
+end

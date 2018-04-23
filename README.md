@@ -1,10 +1,13 @@
 Analysis code for Bonaiuto, et al "Laminar-specific cortical dynamics in human visual and sensorimotor cortices"
 
+https://www.biorxiv.org/content/early/2017/11/30/226274
+
 Requirements:
 
 * RMAOV2: https://uk.mathworks.com/matlabcentral/fileexchange/5578-rmaov2
 * shadedErrorBar: https://fr.mathworks.com/matlabcentral/fileexchange/26311-raacampbell-shadederrorbar?
 * barwitherr: https://fr.mathworks.com/matlabcentral/fileexchange/30639-barwitherr-errors-varargin-?focused=3845794&tab=function
+* dict: http://uk.mathworks.com/matlabcentral/fileexchange/19381-lookuptable
 * MEGSurfer: https://github.com/jbonaiuto/MEGsurfer
 
 % To run analysis

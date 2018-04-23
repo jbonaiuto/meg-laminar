@@ -10,14 +10,14 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
-
 conditions={'Undefined'};
 
 dots_run_mean_tfs=[];
 instr_run_mean_tfs=[];
 resp_run_mean_tfs=[];
 session_ids=[];
+subj_dir=fullfile('D:\pred_coding\derivatives\spm12', subj_info.subj_id);
+
 
 dots_session_mean_tfs=[];
 instr_session_mean_tfs=[];
@@ -25,7 +25,7 @@ resp_session_mean_tfs=[];
 
 run_idx=1;
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     tf_dir=fullfile(session_dir,sprintf('rdots_tf_ffrcinstr_Tafdf%d',session_num));
     session_tfs=[];
     for cond_idx=1:length(conditions)
@@ -68,7 +68,7 @@ end
 
 run_idx=1;
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     tf_dir=fullfile(session_dir,sprintf('rinstr_tf_ffrcinstr_Tafdf%d',session_num));
     session_tfs=[];
     for cond_idx=1:length(conditions)
@@ -108,7 +108,7 @@ end
 
 run_idx=1;
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     tf_dir=fullfile(session_dir,sprintf('rresp_tf_ffrcresp_Tafdf%d',session_num));
     session_tfs=[];
     for cond_idx=1:length(conditions)

@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('D:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('D:\pred_coding\derivatives\spm12\', subj_info.subj_id);
 
 dots_ch='MLO31';
 instr_ch='MLO32';
@@ -30,7 +30,7 @@ hold on;
 run_erps=[];
 session_ids=[];
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     
     instr_file=fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num));
     instr_data=spm_eeg_load(instr_file);
@@ -116,7 +116,7 @@ hold on;
 run_erps=[];
 session_ids=[];
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     
     instr_file=fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num));
     instr_data=spm_eeg_load(instr_file);
@@ -202,7 +202,7 @@ hold on;
 run_erps=[];
 session_ids=[];
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
     
     resp_file=fullfile(session_dir, sprintf('rcresp_Tafdf%d.mat', session_num));
     resp_data=spm_eeg_load(resp_file);

@@ -1,8 +1,8 @@
-function invert_grey(subj_info, session_num, contrast, varargin)
+function invert_grey_newsmooth(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', 'd:/pred_coding/derivatives/spm12', 'inv_type', 'EBB',...
-    'patch_size',0.4, 'surf_dir', 'd:/pred_coding/derivatives/freesurfer', 'mri_dir', 'd:/pred_coding/', 'init', true,...
+    'patch_size',5, 'surf_dir', 'd:/pred_coding/derivatives/freesurfer', 'mri_dir', 'd:/pred_coding/', 'init', true,...
     'coreg', true, 'invert', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
@@ -25,6 +25,13 @@ bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session
 
 spm('defaults', 'EEG');
 spm_jobman('initcfg'); 
+
+% Use all available spatial modes
+ideal_Nmodes=[];
+% Number of cross validation folds
+Nfolds=1;
+% Percentage of test channels in cross validation
+ideal_pctest=0;
 
 if params.init
     % Copy file to foi_dir
@@ -92,6 +99,10 @@ if params.coreg
 end
 
 if params.invert
+    spatialmodesname=fullfile(foi_dir, 'Umodes.mat');
+    [spatialmodesname,Nmodes,pctest]=spm_eeg_inv_prep_modes_xval(bc_file_name,...
+        ideal_Nmodes, spatialmodesname, Nfolds, ideal_pctest);
+
     % Run the inversion
     spm_jobman('initcfg'); 
     clear jobs
@@ -104,13 +115,13 @@ if params.invert
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invtype = params.inv_type;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.woi = contrast.invwoi;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.foi = contrast.foi;
-    %matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.hanning = 1;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.hanning = 0;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.isfixedpatch.randpatch.npatches = 512;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.isfixedpatch.randpatch.niter = 1;
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.patchfwhm = params.patch_size;
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.patchfwhm =[-params.patch_size]; %% NB A fiddle here- need to properly quantify
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.mselect = 0;
-    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.nsmodes = 180;
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.nsmodes = Nmodes;
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.umodes = {spatialmodesname};
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.ntmodes = 16;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.priors.priorsmask = {''};
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.priors.space = 1;
@@ -118,6 +129,7 @@ if params.invert
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.restrict.radius = 32;
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.outinv = '';
     matlabbatch{batch_idx}.spm.meeg.source.invertiter.modality = {'MEG'};
+    matlabbatch{batch_idx}.spm.meeg.source.invertiter.crossval = [pctest Nfolds];   
     spm_jobman('run',matlabbatch);
                
 end
