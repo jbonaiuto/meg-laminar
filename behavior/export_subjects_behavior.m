@@ -1,19 +1,17 @@
-function export_subjects_behavior(subjects)
+function export_subjects_behavior(subjects, data_dir)
 
-fid=fopen('d:/pred_coding/fig1_data.csv','w');
+fid=fopen(fullfile(data_dir, 'derivatives/spm12/behav_data.csv'),'w');
 fprintf(fid, 'Subject,Session,Run,Trial,Congruence,Coherence,Correct,RT\n');
 
 for subj_idx=1:length(subjects)
     subj_info=subjects(subj_idx);
     for session_num=1:length(subj_info.sessions)
         for run_num=1:subj_info.sessions(session_num)
-            load(fullfile('C:\pred_coding\scanning\', subj_info.subj_id, ...
-                num2str(session_num), sprintf('data_%s_%d.mat', subj_info.subj_id,...
-                run_num)));
+            load(fullfile(data_dir, subj_info.subj_id, sprintf('ses-%02d', session_num),...
+                'behavior', sprintf('data_%d.mat', run_num)));
 
-            load(fullfile('C:\pred_coding\scanning\', subj_info.subj_id, ...
-                num2str(session_num), sprintf('stim_%s_%d.mat', subj_info.subj_id,...
-                run_num)));
+            load(fullfile(data_dir, subj_info.subj_id, sprintf('ses-%02d', session_num),...
+                'behavior', sprintf('stim_%d.mat', run_num)));
 
             % Correct for left/right mismatch
             stim.trials(:,1)=1+2-stim.trials(:,1);
