@@ -1,4 +1,4 @@
-function subjects_behavior(subjects, varargin)
+function subjects_behavior(subjects, data_dir, varargin)
 
 defaults = struct();  %define default values
 params = struct(varargin{:});
@@ -17,7 +17,7 @@ correct=dict();
 
 for subj_idx=1:length(subjects)
     subj_info=subjects(subj_idx);
-    [subject_rts, subject_correct]=subject_behavior(subj_info, 'plot',false);
+    [subject_rts, subject_correct]=subject_behavior(subj_info, fullfile(data_dir, subj_info.subj_id), 'plot',false);
     for cond_idx=1:length(conditions)
         condition=conditions{cond_idx};
         
@@ -58,47 +58,3 @@ set(gca, 'XTickLabel', {'low', 'medium', 'high'});
 legend('congruent','incongruent');
 xlabel('Coherence');
 ylabel('% correct');
-
-n_subjs=length(subjects);
-X=zeros(n_subjs*length(conditions),4);
-
-row_idx=1;
-for cong_idx=1:length(congruence_conditions)
-    cong_condition=congruence_conditions{cong_idx};
-    for coh_idx=1:length(coherence_conditions)
-        coh_condition=coherence_conditions{coh_idx};
-        condition=sprintf('%s - %s', cong_condition, coh_condition);
-        cond_rt=rts(condition);
-        for s_idx=1:n_subjs
-            row=[cond_rt(s_idx) cong_idx coh_idx s_idx];
-            X(row_idx,:)=row;
-            row_idx=row_idx+1;
-        end
-    end
-end
-rt_stats=RMAOV2(X);
-[H,P,CI,STATS]=ttest(rts('congruent - low'), rts('incongruent - low'))
-[H,P,CI,STATS]=ttest(rts('congruent - med'), rts('incongruent - med'))
-[H,P,CI,STATS]=ttest(rts('congruent - high'), rts('incongruent - high'))
-
-X=zeros(n_subjs*length(conditions),4);
-
-row_idx=1;
-for cong_idx=1:length(congruence_conditions)
-    cong_condition=congruence_conditions{cong_idx};
-    for coh_idx=1:length(coherence_conditions)
-        coh_condition=coherence_conditions{coh_idx};
-        condition=sprintf('%s - %s', cong_condition, coh_condition);
-        cond_correct=correct(condition);
-        for s_idx=1:n_subjs
-            row=[cond_correct(s_idx) cong_idx coh_idx s_idx];
-            X(row_idx,:)=row;
-            row_idx=row_idx+1;
-        end
-    end
-end
-correct_stats=RMAOV2(X);
-[H,P,CI,STATS]=ttest(correct('congruent - low'), correct('incongruent - low'))
-[H,P,CI,STATS]=ttest(correct('congruent - med'), correct('incongruent - med'))
-[H,P,CI,STATS]=ttest(correct('congruent - high'), correct('incongruent - high'))
-

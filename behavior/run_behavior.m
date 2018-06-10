@@ -1,4 +1,4 @@
-function [rts, correct]=run_behavior(subj_info, session_num, run_num, varargin)
+function [rts, correct]=run_behavior(subj_info, session_num, run_num, data_dir, varargin)
 
 defaults = struct('plot',true);  %define default values
 params = struct(varargin{:});
@@ -8,11 +8,9 @@ for f = fieldnames(defaults)',
     end
 end
 
-load(fullfile('C:\pred_coding\', subj_info.subj_id, ...
-    sprintf('ses-0%d', session_num), 'behavior', sprintf('data_%d.mat', run_num)));
+load(fullfile(data_dir, 'behavior', sprintf('data_%d.mat', run_num)));
 
-load(fullfile('C:\pred_coding\', subj_info.subj_id, ...
-    sprintf('ses-0%d', session_num), 'behavior', sprintf('stim_%d.mat', run_num)));
+load(fullfile(data_dir, 'behavior', sprintf('stim_%d.mat', run_num)));
 
 % Correct for left/right mismatch
 stim.trials(:,1)=1+2-stim.trials(:,1);

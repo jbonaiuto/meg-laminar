@@ -1,4 +1,4 @@
-function [rts, correct]=session_behavior(subj_info, session_num, varargin)
+function [rts, correct]=session_behavior(subj_info, session_num, data_dir, varargin)
 
 defaults = struct('plot',true);  %define default values
 params = struct(varargin{:});
@@ -15,7 +15,7 @@ correct=dict();
 
 for run_num=1:subj_info.sessions(session_num)
     [run_rts, run_correct]=run_behavior(subj_info, session_num, run_num,...
-        'plot',false);
+        data_dir, 'plot',false);
     for cond_idx=1:length(conditions)
         condition=conditions{cond_idx};
         
