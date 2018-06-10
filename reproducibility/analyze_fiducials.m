@@ -43,18 +43,21 @@ for subj_idx=1:length(subjects)
                 end_idx=min(find(diff_z>0.001))-1;
             end
 
+            %run_nas_shifts(end+1,:)=[abs(nas_x(end_idx-1)-nas_x(1)) abs(nas_y(end_idx-1)-nas_y(1)) abs(nas_z(end_idx-1)-nas_z(1))];
             run_nas_shift=[std(mvmt.nas_x(1:end_idx)) std(mvmt.nas_y(1:end_idx)) std(mvmt.nas_z(1:end_idx))];
             for dim_idx=1:3
                 x=1+(dim_idx-2)*.25;
                 plot(x,run_nas_shift(dim_idx).*1000,'o','MarkerEdgeColor',colors(subj_idx,:),'MarkerFaceColor',colors(subj_idx,:));
             end
             
+            %run_lpa_shifts(end+1,:)=[abs(lpa_x(end_idx-1)-lpa_x(1)) abs(lpa_y(end_idx-1)-lpa_y(1)) abs(lpa_z(end_idx-1)-lpa_z(1))];
             run_lpa_shift=[std(mvmt.lpa_x(1:end_idx)) std(mvmt.lpa_y(1:end_idx)) std(mvmt.lpa_z(1:end_idx))];
             for dim_idx=1:3
                 x=2+(dim_idx-2)*.25;
                 plot(x,run_lpa_shift(dim_idx).*1000,'o','MarkerEdgeColor',colors(subj_idx,:),'MarkerFaceColor',colors(subj_idx,:));
             end
 
+            %run_rpa_shifts(end+1,:)=[abs(rpa_x(end_idx-1)-rpa_x(1)) abs(rpa_y(end_idx-1)-rpa_y(1)) abs(rpa_z(end_idx-1)-rpa_z(1))];
             run_rpa_shift=[std(mvmt.rpa_x(1:end_idx)) std(mvmt.rpa_y(1:end_idx)) std(mvmt.rpa_z(1:end_idx))];
             for dim_idx=1:3
                 x=3+(dim_idx-2)*.25;

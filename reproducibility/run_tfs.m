@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('d:\pred_coding\derivatives\spm12', subj_info.subj_id);
+subj_dir=fullfile('C:\meg_laminar\derivatives\spm12\', subj_info.subj_id);
 
 dots_tf_woi=[-3500 -1000];
 dots_baseline=[-3000 -2500];
@@ -22,14 +22,13 @@ resp_tf_woi=[-1500 1500];
 resp_baseline=[-3000 -2500];
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
 
     matlabbatch{1}.spm.meeg.tf.tf.D = {fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num))};
-    %matlabbatch{1}.spm.meeg.tf.tf.channels{1}.chan = dots_ch;
-    matlabbatch{1}.spm.meeg.tf.tf.channels{1}.type = 'MEG';
+    matlabbatch{1}.spm.meeg.tf.tf.channels{1}.chan = dots_ch;
     matlabbatch{1}.spm.meeg.tf.tf.frequencies = [2:100];
     matlabbatch{1}.spm.meeg.tf.tf.timewin = dots_tf_woi;
     matlabbatch{1}.spm.meeg.tf.tf.method.morlet.ncycles = 7;
@@ -48,14 +47,13 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
 
     matlabbatch{1}.spm.meeg.tf.tf.D = {fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num))};
-    %matlabbatch{1}.spm.meeg.tf.tf.channels{1}.chan = instr_ch;
-    matlabbatch{1}.spm.meeg.tf.tf.channels{1}.type = 'MEG';
+    matlabbatch{1}.spm.meeg.tf.tf.channels{1}.chan = instr_ch;
     matlabbatch{1}.spm.meeg.tf.tf.frequencies = [2:100];
     matlabbatch{1}.spm.meeg.tf.tf.timewin = instr_tf_woi;
     matlabbatch{1}.spm.meeg.tf.tf.method.morlet.ncycles = 7;
@@ -71,14 +69,13 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
 
     matlabbatch{1}.spm.meeg.tf.tf.D = {fullfile(session_dir, sprintf('rcresp_Tafdf%d.mat', session_num))};
-    %matlabbatch{1}.spm.meeg.tf.tf.channels{1}.chan = resp_ch;
-    matlabbatch{1}.spm.meeg.tf.tf.channels{1}.type = 'MEG';
+    matlabbatch{1}.spm.meeg.tf.tf.channels{1}.chan = resp_ch;
     matlabbatch{1}.spm.meeg.tf.tf.frequencies = [2:100];
     matlabbatch{1}.spm.meeg.tf.tf.timewin = resp_tf_woi;
     matlabbatch{1}.spm.meeg.tf.tf.method.morlet.ncycles = 7;

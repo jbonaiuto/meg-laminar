@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('D:\pred_coding\derivatives\spm12\', subj_info.subj_id);
+subj_dir=fullfile('D:\meg_laminar\derivatives\spm12\', subj_info.subj_id);
 
 dots_ch='MLO31';
 instr_ch='MLO32';
@@ -30,7 +30,7 @@ hold on;
 run_erps=[];
 session_ids=[];
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     
     instr_file=fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num));
     instr_data=spm_eeg_load(instr_file);
@@ -56,67 +56,20 @@ xlabel('Time (s)');
 ylabel('fT');
 
 mean_session_erps=[];
+run_ICCs=[];
 for session_num=1:length(subj_info.sessions)
+    run_ICCs(session_num)=IPN_icc(run_erps(:,(session_num-1)*3+1:session_num*3),2,'k');
     mean_session_erps(:,end+1)=mean(run_erps(:,(session_num-1)*3+1:session_num*3),2);
 end
-
-run_all_r_sq=[];
-within_r_sq=[];
-for i=1:size(run_erps,2)
-    for j=1:size(run_erps,2)
-        mdl=fitlm(run_erps(:,i),run_erps(:,j));
-        run_all_r_sq(i,j)=mdl.Rsquared.Adjusted;
-        if i<j
-            if session_ids(i)==session_ids(j)
-                within_r_sq(end+1)=mdl.Rsquared.Adjusted;
-            end
-        end
-    end
-end
-session_all_r_sq=[];
-between_r_sq=[];
-for i=1:size(mean_session_erps,2)
-    for j=1:size(mean_session_erps,2)
-        mdl=fitlm(mean_session_erps(:,i),mean_session_erps(:,j));
-        session_all_r_sq(i,j)=mdl.Rsquared.Adjusted;
-        if i<j
-            between_r_sq(end+1)=mdl.Rsquared.Adjusted;
-        end
-    end
-end
-
-figure();
-subplot(1,2,1);
-imagesc(run_all_r_sq);
-set(gca,'clim',[0 1]);
-colorbar();
-axis square;
-set(gca,'xtick',[2 5 8 11]);
-set(gca,'xticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-xticklabel_rotate([],45);
-set(gca,'ytick',[2 5 8 11]);
-set(gca,'yticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-
-subplot(1,2,2);
-imagesc(session_all_r_sq);
-set(gca,'clim',[0 1]);
-colorbar();
-axis square;
-set(gca,'xtick',[1 2 3 4]);
-set(gca,'xticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-xticklabel_rotate([],45);
-set(gca,'ytick',[1 2 3 4]);
-set(gca,'yticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-            
-disp(sprintf('Dots - within-session mean R^2=%.4f, between-session mean R^2=%.4f', mean(within_r_sq), mean(between_r_sq)));
-            
+session_ICC = IPN_icc(mean_session_erps,2,'k');
+disp(sprintf('Dots - within-session mean ICC=%.4f, between-session ICC=%.4f', mean(run_ICCs), session_ICC));
 
 figure();
 hold on;
 run_erps=[];
 session_ids=[];
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     
     instr_file=fullfile(session_dir, sprintf('rcinstr_Tafdf%d.mat', session_num));
     instr_data=spm_eeg_load(instr_file);
@@ -142,67 +95,20 @@ xlabel('Time (s)');
 ylabel('fT');
 
 mean_session_erps=[];
+run_ICCs=[];
 for session_num=1:length(subj_info.sessions)
+    run_ICCs(session_num)=IPN_icc(run_erps(:,(session_num-1)*3+1:session_num*3),2,'k');
     mean_session_erps(:,end+1)=mean(run_erps(:,(session_num-1)*3+1:session_num*3),2);
 end
-
-run_all_r_sq=[];
-within_r_sq=[];
-for i=1:size(run_erps,2)
-    for j=1:size(run_erps,2)
-        mdl=fitlm(run_erps(:,i),run_erps(:,j));
-        run_all_r_sq(i,j)=mdl.Rsquared.Adjusted;
-        if i<j
-            if session_ids(i)==session_ids(j)
-                within_r_sq(end+1)=mdl.Rsquared.Adjusted;
-            end
-        end
-    end
-end
-session_all_r_sq=[];
-between_r_sq=[];
-for i=1:size(mean_session_erps,2)
-    for j=1:size(mean_session_erps,2)
-        mdl=fitlm(mean_session_erps(:,i),mean_session_erps(:,j));
-        session_all_r_sq(i,j)=mdl.Rsquared.Adjusted;
-        if i<j
-            between_r_sq(end+1)=mdl.Rsquared.Adjusted;
-        end
-    end
-end
-
-figure();
-subplot(1,2,1);
-imagesc(run_all_r_sq);
-set(gca,'clim',[0 1]);
-colorbar();
-axis square;
-set(gca,'xtick',[2 5 8 11]);
-set(gca,'xticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-xticklabel_rotate([],45);
-set(gca,'ytick',[2 5 8 11]);
-set(gca,'yticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-
-subplot(1,2,2);
-imagesc(session_all_r_sq);
-set(gca,'clim',[0 1]);
-colorbar();
-axis square;
-set(gca,'xtick',[1 2 3 4]);
-set(gca,'xticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-xticklabel_rotate([],45);
-set(gca,'ytick',[1 2 3 4]);
-set(gca,'yticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-
-
-disp(sprintf('Instr - within-session mean R^2=%.4f, between-session mean R^2=%.4f', mean(within_r_sq), mean(between_r_sq)));
+session_ICC = IPN_icc(mean_session_erps,2,'k');
+disp(sprintf('Instr - within-session mean ICC=%.4f, between-session ICC=%.4f', mean(run_ICCs), session_ICC));
 
 figure();
 hold on;
 run_erps=[];
 session_ids=[];
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     
     resp_file=fullfile(session_dir, sprintf('rcresp_Tafdf%d.mat', session_num));
     resp_data=spm_eeg_load(resp_file);
@@ -228,58 +134,11 @@ xlabel('Time (s)');
 ylabel('fT');
 
 mean_session_erps=[];
+run_ICCs=[];
 for session_num=1:length(subj_info.sessions)
+    run_ICCs(session_num)=IPN_icc(run_erps(:,(session_num-1)*3+1:session_num*3),2,'k');
     mean_session_erps(:,end+1)=mean(run_erps(:,(session_num-1)*3+1:session_num*3),2);
 end
+session_ICC = IPN_icc(mean_session_erps,2,'k');
+disp(sprintf('Resp - within-session mean ICC=%.4f, between-session ICC=%.4f', mean(run_ICCs), session_ICC));
 
-run_all_r_sq=[];
-within_r_sq=[];
-for i=1:size(run_erps,2)
-    for j=1:size(run_erps,2)
-        mdl=fitlm(run_erps(:,i),run_erps(:,j));
-        run_all_r_sq(i,j)=mdl.Rsquared.Adjusted;
-        if i<j
-            if session_ids(i)==session_ids(j)
-                within_r_sq(end+1)=mdl.Rsquared.Adjusted;
-            end
-        end
-    end
-end
-session_all_r_sq=[];
-between_r_sq=[];
-for i=1:size(mean_session_erps,2)
-    for j=1:size(mean_session_erps,2)
-        mdl=fitlm(mean_session_erps(:,i),mean_session_erps(:,j));
-        session_all_r_sq(i,j)=mdl.Rsquared.Adjusted;
-        if i<j
-            between_r_sq(end+1)=mdl.Rsquared.Adjusted;
-        end
-    end
-end
-
-figure();
-subplot(1,2,1);
-imagesc(run_all_r_sq);
-set(gca,'clim',[0 1]);
-colorbar();
-axis square;
-set(gca,'xtick',[2 5 8 11]);
-set(gca,'xticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-xticklabel_rotate([],45);
-set(gca,'ytick',[2 5 8 11]);
-set(gca,'yticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-
-subplot(1,2,2);
-imagesc(session_all_r_sq);
-set(gca,'clim',[0 1]);
-colorbar();
-axis square;
-set(gca,'xtick',[1 2 3 4]);
-set(gca,'xticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-xticklabel_rotate([],45);
-set(gca,'ytick',[1 2 3 4]);
-set(gca,'yticklabel',{'Session 1','Session 2','Session 3','Session 4'});
-
-
-
-disp(sprintf('Resp - within-session mean R^2=%.4f, between-session mean R^2=%.4f', mean(within_r_sq), mean(between_r_sq)));

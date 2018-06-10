@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('d:/pred_coding/derivates/spm12', subj_info.subj_id);
+subj_dir=fullfile('C:\meg_laminar\derivatives\spm12', subj_info.subj_id);
 
 dots_woi=[-3000 -1500];
 
@@ -28,7 +28,7 @@ instr_channels={'MLO53','MLO43','MLO32','MLO52','MLO31','MLO51','MLO41',...
     'MZO02','MZO03','MRO52','MRO42','MRO31','MRO53','MRO43','MRO32'};
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
@@ -52,7 +52,7 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
@@ -76,7 +76,7 @@ for session_num=1:length(subj_info.sessions)
 end
 
 for session_num=1:length(subj_info.sessions)
-    session_dir=fullfile(subj_dir, sprintf('ses-0%d',session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     spm_jobman('initcfg');
     matlabbatch={}; 
     clear jobs
