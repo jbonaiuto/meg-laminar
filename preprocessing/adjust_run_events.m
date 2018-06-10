@@ -22,7 +22,7 @@ for f = fieldnames(defaults)',
 end
 
 % File containing data
-analysis_dir=fullfile(params.data_dir,subj_info.subj_id,sprintf('ses-0%d',session_num));
+analysis_dir=fullfile(params.data_dir,subj_info.subj_id,sprintf('ses-%02d',session_num));
 spm_file_name=fullfile(analysis_dir, sprintf('%d-%d.mat',session_num,run_num));
 
 % Adjust event timings
@@ -137,7 +137,7 @@ for i=1:length(D.trials.events)
 end
 
 if params.delete_no_resp
-    load(fullfile(params.data_dir,subj_info.subj_id, sprintf('ses-0%d',session_num), 'behavior', ['data_' num2str(run_num) '.mat']));
+    load(fullfile(params.data_dir,'scanning', subj_info.subj_id, num2str(session_num), ['data_' subj_info.subj_id '_' num2str(run_num) '.mat']));
     evts_to_delete=[];
     no_resp_trials=find(data.responses(:,1)==0);
     num_dots_evts=0;

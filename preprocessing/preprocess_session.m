@@ -1,7 +1,7 @@
 function preprocess_session(subj_info, session_num, varargin)
 
-defaults = struct('data_dir', 'd:\pred_coding\', ...
-    'url_prefix', 'http://localhost/', 'convert',true, ...
+defaults = struct('data_dir', 'd:\meg_laminar\', ...
+    'convert',true, ...
     'filter', true, 'remove_blinks', true, 'epoch', true, 'delete_last_resp', false, ...
     'highpass_freq',2.0,'downsample',250,'lowpass_freq',100.0,'instr_epoch',[-3500 1500],'resp_epoch',[-2000 2000], ...
     'blink_channel','MLT31','manual_reject',false);  %define default values
@@ -22,11 +22,6 @@ analysis_dir=fullfile(params.data_dir,'derivatives/spm12',subj_info.subj_id,spri
 if exist(analysis_dir,'dir')~=7
     mkdir(analysis_dir);
 end
-% Directory to put report
-report_dir=fullfile(analysis_dir,'preprocessing');
-if exist(report_dir,'dir')~=7
-    mkdir(report_dir);
-end
 
 spm('defaults','eeg');
 spm_jobman('initcfg');
@@ -34,30 +29,16 @@ spm_jobman('initcfg');
 instr_run_files={};
 resp_run_files={};
 
-tpl = template('templates/','keep');
-tpl = set(tpl,'file',{'session'},{'session_template.tpl'});
-tpl = set(tpl,'var',{'PAGETITLE'},{sprintf('%s: Session %d', subj_info.subj_id, session_num)});
-    
-run_list='<ul>';
 for run_num=1:subj_info.sessions(session_num)
     
-    run_list=sprintf('%s<li><a href="%s%s">Run %d</a></li>', run_list, ...
-        params.url_prefix, ...
-        sprintf('derivatives/spm12/%s/ses-0%d/preprocessing/preprocessing-%d.html',subj_info.subj_id,session_num,run_num),...
-        run_num); 
-    run_tpl = template('templates/','keep');
-    run_tpl = set(run_tpl,'file',{'run'},{'run_template.tpl'});
-    run_tpl = set(run_tpl,'var',{'PAGETITLE'},{sprintf('%s: Session %d - Run %d', subj_info.subj_id, session_num, run_num)});
-
-
     % Directory containing run data
     run_code=[subj_info.subj_id '_JamesBonaiuto_' subj_info.scan_date{session_num} '_0' num2str(run_num)];
-    run_dir=fullfile(session_dir, [run_code '.ds']);
+    run_dir=fullfile(session_dir, 'meg', [run_code '.ds']);
 
     % File containing stimulus information for each trial
-    stim_file=fullfile(session_dir, ['stim_' num2str(run_num) '.mat']);
+    stim_file=fullfile(session_dir, 'behavior', ['stim_' num2str(run_num) '.mat']);
     % File containing behavioral data from each trial
-    data_file=fullfile(session_dir, ['data_' num2str(run_num) '.mat']);
+    data_file=fullfile(session_dir, 'behavior', ['data_' num2str(run_num) '.mat']);
 
     spm_filename=sprintf('%d-%d.mat',session_num,run_num);
   
@@ -78,25 +59,15 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.convert.inputformat = 'autodetect';
         spm_jobman('run',matlabbatch);
 
-        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('fiducial_coils-%d.png',run_num));
-        plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event',false,'lim_jump',false,'output_file', fullfile(params.data_dir,file_path));
-        run_tpl = set(run_tpl, 'var', {'FIDUCIALSRC'}, {[params.url_prefix file_path]});
-
-        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('fiducial_coils_lastevent-%d.png',run_num));
-        plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event',true,'lim_jump',false, 'output_file', fullfile(params.data_dir,file_path));
-        run_tpl = set(run_tpl, 'var', {'FIDUCIALLASTEVENTSRC'}, {[params.url_prefix file_path]});
-
-        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('fiducial_coils_nojump-%d.png',run_num));
-        plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event', false, 'lim_jump', true, 'output_file', fullfile(params.data_dir,file_path));
-        run_tpl = set(run_tpl, 'var', {'FIDUCIALNOJUMPSRC'}, {[params.url_prefix file_path]});
-    
+        plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event',false,'lim_jump',false);
+        
+        plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event',true,'lim_jump',false);
+        
+        plot_fiducial_coils(fullfile(analysis_dir, spm_filename), 'lim_last_event', false, 'lim_jump', true);
+        
         % Correct event timings, adjust initial events
-        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('diode-%d.png',run_num));
         [num_diode_onsets num_dots_evts num_instr_evts num_resp_evts]=adjust_run_events(subj_info, session_num, run_num, 'data_dir', params.data_dir, 'plot_diode',true,...
-            'output_file', fullfile(params.data_dir,file_path), 'delete_last_resp',params.delete_last_resp,'delete_no_resp',true);
-        run_tpl = set(run_tpl,'var',{'DIODECHANNEL','DIODEONSETS','DIODETHRESH','DIODESRC','DOTSEVENTS','INSTREVENTS','RESPEVENTS'},{num2str(subj_info.diode_ch(session_num)),...
-            num2str(num_diode_onsets),num2str(subj_info.diode_thresh(session_num)),[params.url_prefix file_path],...
-            num2str(num_dots_evts),num2str(num_instr_evts),num2str(num_resp_evts)});
+            'delete_last_resp',params.delete_last_resp,'delete_no_resp',true);        
 
     end
     
@@ -114,15 +85,13 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.preproc.filter.order = 5;
         matlabbatch{batch_idx}.spm.meeg.preproc.filter.prefix = fullfile(analysis_dir,'f');
         batch_idx=batch_idx+1;
-        run_tpl = set(run_tpl,'var',{'HIGHPASSFREQ'},{num2str(params.highpass_freq)});
-
+        
         % Downsample
         matlabbatch{batch_idx}.spm.meeg.preproc.downsample.D = {fullfile(analysis_dir, sprintf('f%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.preproc.downsample.fsample_new = params.downsample;
         matlabbatch{batch_idx}.spm.meeg.preproc.downsample.prefix = fullfile(analysis_dir,'d');
         batch_idx=batch_idx+1;
-        run_tpl = set(run_tpl,'var',{'DOWNSAMPLE'},{num2str(params.downsample)});
-
+        
         % Lowpass filter
         matlabbatch{batch_idx}.spm.meeg.preproc.filter.D = {fullfile(analysis_dir, sprintf('df%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.preproc.filter.type = 'butterworth';
@@ -132,7 +101,6 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.preproc.filter.order = 5;
         matlabbatch{batch_idx}.spm.meeg.preproc.filter.prefix = fullfile(analysis_dir,'f');
         batch_idx=batch_idx+1;
-        run_tpl = set(run_tpl,'var',{'LOWPASSFREQ'},{num2str(params.lowpass_freq)});
         spm_jobman('run',matlabbatch);
     end
     
@@ -146,7 +114,7 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {fullfile(analysis_dir, sprintf('fdf%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = '';
-        matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.data_dir,subj_info.subj_id,'anat',[subj_info.headcast_t1 ',1'])};
+        matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.data_dir,'mri',[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshres = 2;
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.coregistration.coregspecify.fiducial(1).fidname = 'nas';
         matlabbatch{batch_idx}.spm.meeg.source.headmodel.coregistration.coregspecify.fiducial(1).specification.type = subj_info.nas;
@@ -216,17 +184,10 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.preproc.correct.prefix = 'T';
         batch_idx=batch_idx+1;
         spm_jobman('run',matlabbatch);
-
-        run_tpl = set(run_tpl,'var',{'BLINKSREMOVED'},{['TRUE (' params.blink_channel ')']});
-        Fgraph = spm_figure('GetWin','Graphics');
-        file_path=fullfile('derivatives/spm12',subj_info.subj_id,sprintf('ses-0%d',session_num),'preprocessing',sprintf('blink_component-%d.png',run_num));
-        saveas(Fgraph, fullfile(params.data_dir, file_path));
-        run_tpl = set(run_tpl,'var',{'BLINKCMPNTSRC'},{[params.url_prefix file_path]});
     end
     
     % Remove bad channels
     channels_removed=remove_bad_channels(subj_info, session_num, fullfile(analysis_dir, sprintf('Tafdf%s',spm_filename)));
-    run_tpl = set(run_tpl,'var',{'CHANNELSREMOVED'},{strjoin(channels_removed, ', ')});
     
     clear jobs
     matlabbatch={};
@@ -245,8 +206,7 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.eventpadding = 0;
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.prefix = fullfile(analysis_dir, 'instr_');
         batch_idx=batch_idx+1;
-        run_tpl = set(run_tpl,'var',{'INSTREPOCH'},{[num2str(params.instr_epoch(1)) '-' num2str(params.instr_epoch(2)) 'ms']});
-
+    
         % Epoch - aligned to response
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.D = {fullfile(analysis_dir, sprintf('Tafdf%s',spm_filename))};
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.trialchoice.define.timewin = params.resp_epoch;
@@ -258,7 +218,6 @@ for run_num=1:subj_info.sessions(session_num)
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.eventpadding = 0;
         matlabbatch{batch_idx}.spm.meeg.preproc.epoch.prefix = fullfile(analysis_dir, 'resp_');
         batch_idx=batch_idx+1;
-        run_tpl = set(run_tpl,'var',{'RESPEPOCH'},{[num2str(params.resp_epoch(1)) '-' num2str(params.resp_epoch(2)) 'ms']});
     end
     
     matlabbatch{batch_idx}.spm.meeg.other.delete.D = {fullfile(analysis_dir, sprintf('afdf%s',spm_filename))};
@@ -284,26 +243,13 @@ for run_num=1:subj_info.sessions(session_num)
     % Label trial conditions
     [no_response incorrect]=label_trials(fullfile(analysis_dir, sprintf('instr_Tafdf%s',spm_filename)), stim_file, data_file, 'delete_no_resp',true);
     [no_response incorrect]=label_trials(fullfile(analysis_dir, sprintf('resp_Tafdf%s',spm_filename)), stim_file, data_file, 'delete_no_resp',true);
-    run_tpl = set(run_tpl,'var',{'NORESP','INCORRECT'},{num2str(no_response),num2str(incorrect)});
-
+    
     instr_run_files{end+1,1}=fullfile(analysis_dir, sprintf('instr_Tafdf%s',spm_filename));
     resp_run_files{end+1,1}=fullfile(analysis_dir, sprintf('resp_Tafdf%s',spm_filename));
-    
-    run_tpl = parse(run_tpl,'OUT', {'run'});
-
-    %- Display the content of the output of the parsing
-    out_file=fullfile(report_dir,sprintf('preprocessing-%d.html',run_num));
-    fid=fopen(out_file,'w');
-    %display(get(tpl,'OUT'))
-    fprintf(fid, strrep(strrep(get(run_tpl,'OUT'),'%','%%'),'\','/'));
-    fclose(fid);
-
+        
     close all;
 
 end
-
-run_list=sprintf('%s</ul>',run_list);
-tpl=set(tpl, 'var', {'RUNLIST'}, {run_list});
 
 clear jobs
 matlabbatch={};
@@ -362,12 +308,8 @@ S=[];
 S.D=original_data;
 S.outfile=fullfile(analysis_dir, sprintf('rcinstr_Tafdf%d.mat', session_num));
 spm_eeg_copy(S);
-file_path=fullfile(report_dir,'prefilter_instr_trials.png');
-[instr_mean_trial_var instr_std_trial_var]=plot_trial_var(original_data, 'output_file', file_path);
-tpl = set(tpl,'var',{'INSTRTRIALVARPRESRC'},{['file://' file_path]});
-file_path=fullfile(report_dir,'prefilter_instr_channels.png');
-plot_channel_var(original_data, 'output_file', file_path);
-tpl = set(tpl,'var',{'INSTRCHANVARPRESRC'},{['file://' file_path]});
+[instr_mean_trial_var instr_std_trial_var]=plot_trial_var(original_data);
+plot_channel_var(original_data);
 
 instr=spm_eeg_load(fullfile(analysis_dir, sprintf('rcinstr_Tafdf%d.mat', session_num)));
 good_chans=setdiff([33:307],instr.badchannels);
@@ -383,12 +325,8 @@ S=[];
 S.D=original_data;
 S.outfile=fullfile(analysis_dir, sprintf('rcresp_Tafdf%d.mat', session_num));
 spm_eeg_copy(S);
-file_path=fullfile(report_dir,'prefilter_resp_trials.png');
-[resp_mean_trial_var resp_std_trial_var]=plot_trial_var(original_data, 'output_file', file_path);
-tpl = set(tpl,'var',{'RESPTRIALVARPRESRC'},{['file://' file_path]});
-file_path=fullfile(report_dir,'prefilter_resp_channels.png');
-plot_channel_var(original_data, 'output_file', file_path);
-tpl = set(tpl,'var',{'RESPCHANVARPRESRC'},{['file://' file_path]});
+[resp_mean_trial_var resp_std_trial_var]=plot_trial_var(original_data);
+plot_channel_var(original_data);
 
 resp=spm_eeg_load(fullfile(analysis_dir, sprintf('rcresp_Tafdf%d.mat', session_num)));
 good_chans=setdiff([33:307],resp.badchannels);
@@ -398,12 +336,8 @@ bad_trials=union(bad_trials,resp_bad_trials);
 
 instr_filtered_data=badtrials(instr,bad_trials,1);
 instr_filtered_data.save();
-file_path=fullfile(report_dir,'postfilter_instr_trials.png');
-plot_trial_var(instr_filtered_data, 'output_file', file_path, 'mean_trial_var', instr_mean_trial_var, 'std_trial_var', instr_std_trial_var);
-tpl = set(tpl,'var',{'INSTRTRIALVARPOSTSRC'},{['file://' file_path]});
-file_path=fullfile(report_dir,'postfilter_instr_channels.png');
-plot_channel_var(instr_filtered_data, 'output_file', file_path);
-tpl = set(tpl,'var',{'INSTRCHANVARPOSTSRC'},{['file://' file_path]});
+plot_trial_var(instr_filtered_data, 'mean_trial_var', instr_mean_trial_var, 'std_trial_var', instr_std_trial_var);
+plot_channel_var(instr_filtered_data);
 artifact_trials=setdiff(instr_filtered_data.badtrials(),instr_old_trials);
 artifact_channels=setdiff(instr_filtered_data.badchannels(),instr_old_channels);
 removed_trials={};
@@ -414,17 +348,12 @@ removed_channels={};
 for idx=1:length(artifact_channels)
     removed_channels{end+1}=S.D.chanlabels{artifact_channels(idx)};
 end
-tpl = set(tpl,'var',{'INSTRBADCHANNELS','INSTRBADTRIALS'},{strjoin(removed_channels, ', '),strjoin(removed_trials, ', ')});
 
 
 resp_filtered_data=badtrials(resp,bad_trials,1);
 resp_filtered_data.save();
-file_path=fullfile(report_dir,'postfilter_resp_trials.png');
-plot_trial_var(resp_filtered_data, 'output_file', file_path, 'mean_trial_var', resp_mean_trial_var, 'std_trial_var', resp_std_trial_var);
-tpl = set(tpl,'var',{'RESPTRIALVARPOSTSRC'},{['file://' file_path]});
-file_path=fullfile(report_dir,'postfilter_resp_channels.png');
-plot_channel_var(resp_filtered_data, 'output_file', file_path);
-tpl = set(tpl,'var',{'RESPCHANVARPOSTSRC'},{['file://' file_path]});
+plot_trial_var(resp_filtered_data, 'mean_trial_var', resp_mean_trial_var, 'std_trial_var', resp_std_trial_var);
+plot_channel_var(resp_filtered_data);
 artifact_trials=setdiff(resp_filtered_data.badtrials(),resp_old_trials);
 artifact_channels=setdiff(resp_filtered_data.badchannels(),resp_old_channels);
 removed_trials={};
@@ -435,7 +364,6 @@ removed_channels={};
 for idx=1:length(artifact_channels)
     removed_channels{end+1}=S.D.chanlabels{artifact_channels(idx)};
 end
-tpl = set(tpl,'var',{'RESPBADCHANNELS','RESPBADTRIALS'},{strjoin(removed_channels, ', '),strjoin(removed_trials, ', ')});
 
 
 clear jobs
@@ -470,14 +398,5 @@ matlabbatch{batch_idx}.spm.meeg.averaging.average.prefix = fullfile(analysis_dir
 batch_idx=batch_idx+1;
 
 spm_jobman('run',matlabbatch);
-
-tpl = parse(tpl,'OUT', {'session'});
-
-%- Display the content of the output of the parsing
-out_file=fullfile(report_dir,'preprocessing.html');
-fid=fopen(out_file,'w');
-%display(get(tpl,'OUT'))
-fprintf(fid, strrep(strrep(get(tpl,'OUT'),'\','/'),'%','%%'));
-fclose(fid);
 
 close all;
