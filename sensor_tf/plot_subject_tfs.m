@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('C:\meg_laminar\derivatives\spm12\', subj_info.subj_id);
 
 session_tfs=[];
 sessions=[1:length(subj_info.sessions)];
@@ -19,13 +19,12 @@ if strcmp(subj_info.subj_id,'nc')
 end
 for session_idx=1:length(sessions)
     session_num=sessions(session_idx);
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     tf_dir=fullfile(session_dir,sprintf('r%s_tf_ffrc%s_Tafdf%d',epoch_name,zero_evt,session_num));
     if exist(tf_dir,'dir')~=7
         tf_dir=fullfile(session_dir,sprintf('r%s_tf_rc%s_Tafdf%d',epoch_name,zero_evt,session_num));
     end
     
-    %X=spm_vol(fullfile(tf_dir, 'scondition_Undefined.nii'));
     X=spm_vol(fullfile(tf_dir, 'condition_Undefined.nii'));
     max_dim=max(X(1).dim);
     coords=X(1).mat*[[1:max_dim]' [1:max_dim]' ones(max_dim,1) ones(max_dim,1)]';

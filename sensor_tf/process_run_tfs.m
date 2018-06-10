@@ -10,8 +10,8 @@ end
 
 spm('defaults','eeg');
 
-subj_source_dir=fullfile('D:\pred_coding\analysis\', subj_info.subj_id);
-subj_dest_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
+subj_source_dir=fullfile('D:\meg_laminar\derivatives\spm12\', subj_info.subj_id);
+subj_dest_dir=fullfile('C:\meg_laminar\derivatives\spm12\', subj_info.subj_id);
 
 dots_tf_woi=[-3250 -250];
 dots_baseline=[-3000 -2500];
@@ -29,8 +29,8 @@ end
 
 for session_idx=1:length(sessions)
     session_num=sessions(session_idx);
-    session_source_dir=fullfile(subj_source_dir, num2str(session_num));
-    session_dest_dir=fullfile(subj_dest_dir, num2str(session_num));
+    session_source_dir=fullfile(subj_source_dir, sprintf('ses-%02d',session_num));
+    session_dest_dir=fullfile(subj_dest_dir, sprintf('ses-%02d',session_num));
     instr_fname=sprintf('rcinstr_Tafdf%d.mat', session_num);
     resp_fname=sprintf('rcresp_Tafdf%d.mat', session_num);
     

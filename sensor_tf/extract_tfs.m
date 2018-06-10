@@ -10,7 +10,7 @@ end
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('C:\meg_laminar\derivatives\spm12\', subj_info.subj_id);
 
 dots_woi=[-3000 -500];
 instr_woi=[-500 500];
@@ -33,7 +33,7 @@ end
 
 for session_idx=1:length(sessions)
     session_num=sessions(session_idx);
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     
     if exist(fullfile(session_dir, sprintf('rdots_tf_ffrcinstr_Tafdf%d.mat', session_num)),'file')==2
         spm_jobman('initcfg');
@@ -66,7 +66,7 @@ end
 
 for session_idx=1:length(sessions)
     session_num=sessions(session_idx);
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     if exist(fullfile(session_dir, sprintf('rinstr_tf_ffrcinstr_Tafdf%d.mat', session_num)),'file')==2
         spm_jobman('initcfg');
         matlabbatch={}; 
@@ -98,7 +98,7 @@ end
 
 for session_idx=1:length(sessions)
     session_num=sessions(session_idx);
-    session_dir=fullfile(subj_dir, num2str(session_num));
+    session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
     if exist(fullfile(session_dir, sprintf('rresp_tf_ffrcresp_Tafdf%d.mat', session_num)),'file')==2
         spm_jobman('initcfg');
         matlabbatch={}; 

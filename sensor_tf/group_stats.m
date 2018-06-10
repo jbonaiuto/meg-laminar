@@ -6,7 +6,7 @@ clear jobs;
 matlabbatch={};
 batch_idx=1;
 
-dir=fullfile('C:\pred_coding\analysis\sensor_tf\stats',epoch_name);
+dir=fullfile('C:\meg_laminar\derivatives\spm12\sensor_tf',epoch_name);
 mkdir(dir);
 
 matlabbatch{batch_idx}.spm.stats.factorial_design.dir = {dir};
@@ -21,7 +21,7 @@ for subj_idx=1:length(subjects)
     end
     for session_idx=1:length(sessions)
         session_num=sessions(session_idx);
-        fname=fullfile('C:\pred_coding\analysis',subj_info.subj_id,num2str(session_num),sprintf('r%s_tf_ffrc%s_Tafdf%d', epoch_name, zero_evt, session_num),'scondition_Undefined.nii');
+        fname=fullfile('C:\meg_laminar\derivatives\spm12',subj_info.subj_id,sprintf('ses-%02d',session_num),sprintf('r%s_tf_ffrc%s_Tafdf%d', epoch_name, zero_evt, session_num),'scondition_Undefined.nii');
         x=spm_vol(fname);
         for i=1:length(x)
             scans{end+1,1}=sprintf('%s,%d', fname, i);

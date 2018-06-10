@@ -5,7 +5,7 @@ align_evts={'instr','instr','resp'};
 
 spm('defaults','eeg');
 
-subj_dir=fullfile('C:\pred_coding\analysis\', subj_info.subj_id);
+subj_dir=fullfile('C:\mag_laminar\derivatives\spm12\', subj_info.subj_id);
 
 sessions=[1:length(subj_info.sessions)];
 if strcmp(subj_info.subj_id,'nc')
@@ -23,7 +23,7 @@ for epoch_idx=1:length(epochs)
     session_smoothed_tfs=[];
     for session_idx=1:length(sessions)
         session_num=sessions(session_idx);
-        session_dir=fullfile(subj_dir, num2str(session_num));
+        session_dir=fullfile(subj_dir, sprintf('ses-%02d',session_num));
         
         tf_dir=fullfile(session_dir,sprintf('r%s_tf_ffrc%s_Tafdf%d',epoch,align_evt,session_num));
         
