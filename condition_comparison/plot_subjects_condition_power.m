@@ -1,8 +1,9 @@
 function cond_results=plot_subjects_condition_power(subjects, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding/derivatives/spm12','surf_dir', 'D:/pred_coding/derivatives/freesurfer',...
-    'inv_type','EBB','patch_size',0.4,'filter_sessions',true,...
+defaults = struct('data_dir','d:/pred_coding/derivatives/spm12',...
+    'surf_dir', 'D:/pred_coding/derivatives/freesurfer',...
+    'inv_type','EBB','patch_size',0.4,...
     'thresh_percentile',80,'roi_type','mean','recompute', false, 'recompute_roi',false,...
     'correct_only', true, 'plot_subjects', false, 'plot', true);  %define default values
 params = struct(varargin{:});
@@ -36,10 +37,9 @@ for subj_idx=1:length(subjects)
     subj_cond_results=plot_subject_condition_power(subj_info,...
         contrast, 'data_dir', params.data_dir,'surf_dir', params.surf_dir,...
         'inv_type', params.inv_type, 'patch_size', params.patch_size,...
-        'filter_sessions',params.filter_sessions, 'thresh_percentile', params.thresh_percentile,...
+        'thresh_percentile', params.thresh_percentile,...
         'roi_type', params.roi_type, 'recompute', params.recompute, 'recompute_roi',params.recompute_roi,...
-        'correct_only', params.correct_only, 'remove_woi_outliers', false,...
-        'remove_rt_outliers', false, 'plot', params.plot_subjects);
+        'correct_only', params.correct_only, 'plot', params.plot_subjects);
     
     pial_scale_factor=get_scale_factor_woi(accuracy_conditions, subj_cond_results.pial_trials_woi, contrast);
     wm_scale_factor=get_scale_factor_woi(accuracy_conditions, subj_cond_results.wm_trials_woi, contrast);
@@ -146,19 +146,11 @@ x_woi('all-pial')=cond_results.norm_pial_trials_woi('all');
 x_woi('all-white')=cond_results.norm_wm_trials_woi('all');
 
 if params.plot
-    out_dir=fullfile('C:\Users\jbonai\Dropbox\meg\pred_coding\plots\condition_comparison',contrast.comparison_name);
-    if exist(out_dir,'dir')~=7
-        mkdir(out_dir);
-    end
     
     fig=plot_power_woi(cond_results.norm_pial_trials_woi, accuracy_conditions, subj_ids);
-    figure2eps(fig, fullfile(out_dir, sprintf('%s-all_subjects-pial-correct_incorrect_woi.eps', contrast.comparison_name)), 10, '-opengl');
-    saveas(fig, fullfile(out_dir, sprintf('%s-all_subjects-pial-correct_incorrect_woi.png', contrast.comparison_name)), 'png');
-
+    
     fig=plot_power_woi(cond_results.norm_wm_trials_woi, accuracy_conditions,subj_ids);
-    figure2eps(fig, fullfile(out_dir, sprintf('%s-all_subjects-wm-correct_incorrect_woi.eps', contrast.comparison_name)), 10, '-opengl');
-    saveas(fig, fullfile(out_dir, sprintf('%s-all_subjects-wm-correct_incorrect_woi.png', contrast.comparison_name)), 'png');
-
+    
     fig=figure('position',[1 1 1185 950]);
     ax=subplot(2,2,1);
     plot_power_woi(x_woi, {'all-pial','all-white'}, subj_ids,'ax', ax);
@@ -171,9 +163,7 @@ if params.plot
     ax=subplot(2,2,4);
     plot_power_woi(cond_results.norm_pial_trials_woi, conditions, subj_ids,'ax', ax);
     title('pial');
-    figure2eps(fig, fullfile(out_dir, sprintf('%s-all_subjects-pial_woi.eps', contrast.comparison_name)), 10, '-opengl');
-    saveas(fig, fullfile(out_dir, sprintf('%s-all_subjects-pial_woi.png', contrast.comparison_name)), 'png');
-
+    
     fig=figure('position',[1 1 1185 950]);
     ax=subplot(2,2,1);
     plot_power_woi(x_woi, {'all-pial','all-white'}, subj_ids,'ax', ax);
@@ -185,75 +175,5 @@ if params.plot
     title('white');
     ax=subplot(2,2,4);
     plot_power_woi(cond_results.norm_wm_trials_woi, conditions, subj_ids,'ax', ax);
-    title('white');
-    figure2eps(fig, fullfile(out_dir, sprintf('%s-all_subjects-wm_woi.eps', contrast.comparison_name)), 10, '-opengl');
-    saveas(fig, fullfile(out_dir, sprintf('%s-all_subjects-wm_woi.png', contrast.comparison_name)), 'png');
-
-    fid=fopen(fullfile(out_dir, sprintf('%s_stats.txt',contrast.comparison_name)),'w');
-
-    % Pial - wm (all)
-    [p,h,stats]=signrank(cond_results.pial_trials_woi('all'), cond_results.wm_trials_woi('all'));
-    stat_str=sprintf('pial (all) - wm (all): W=%.3f, p=%.5f\n\n', stats.signedrank, p);
-    disp(stat_str);
-    fprintf(fid, stat_str);
-
-    % correct - incorrect (pial)
-    [p,h,stats]=signrank(cond_results.pial_trials_woi('correct'), cond_results.pial_trials_woi('incorrect'));
-    stat_str=sprintf('correct (pial) - incorrect (pial): W=%.3f, p=%.5f\n\n', stats.signedrank, p);
-    disp(stat_str);
-    fprintf(fid, stat_str);
-
-    % correct - incorrect (wm)
-    [p,h,stats]=signrank(cond_results.wm_trials_woi('correct'), cond_results.wm_trials_woi('incorrect'));
-    stat_str=sprintf('correct (wm) - incorrect (wm): W=%.3f, p=%.5f\n\n', stats.signedrank, p);
-    disp(stat_str);
-    fprintf(fid, stat_str);
-
-    % coherence conditions (pial)
-    disp('Pial - coherence');
-    [p,tbl,stats]=friedman([cond_results.pial_trials_woi('low')' cond_results.pial_trials_woi('med')' cond_results.pial_trials_woi('high')'],1,'off');    
-    fprintf(fid,'Pial - coherence\n');
-    fprintf(fid,'---------------------------------------------------------------------------\n');
-    fprintf(fid,'SOV                  SS          df           MS             Chi-Sq        P\n');
-    fprintf(fid,'---------------------------------------------------------------------------\n');
-    fprintf(fid,'Coherence            %11.3f%10i%15.3f%14.3f%9.4f\n\n',tbl{2,2},tbl{2,3},tbl{2,4},tbl{2,5},tbl{2,6});
-    fprintf(fid,'Error         %11.3f%10i%15.3f\n\n',tbl{3,2},tbl{3,3},tbl{3,4});
-    fprintf(fid,'Total         %11.3f%10i\n\n',tbl{4,2},tbl{4,3});
-    fprintf(fid,'---------------------------------------------------------------------------\n\n');
-
-    c=multcompare(stats);
-    fprintf(fid,'low-med: p=%.5f\n', c(1,6));
-    fprintf(fid,'low-high: p=%.5f\n', c(2,6));
-    fprintf(fid,'med-high: p=%.5f\n', c(3,6));
-    
-    % coherence conditions (wm)
-    disp('WM - coherence');
-    [p,tbl,stats]=friedman([cond_results.wm_trials_woi('low')' cond_results.wm_trials_woi('med')' cond_results.wm_trials_woi('high')'],1,'off');    
-    fprintf(fid,'WM - coherence\n');
-    fprintf(fid,'---------------------------------------------------------------------------\n');
-    fprintf(fid,'SOV                  SS          df           MS             Chi-Sq        P\n');
-    fprintf(fid,'---------------------------------------------------------------------------\n');
-    fprintf(fid,'Coherence            %11.3f%10i%15.3f%14.3f%9.4f\n\n',tbl{2,2},tbl{2,3},tbl{2,4},tbl{2,5},tbl{2,6});
-    fprintf(fid,'Error         %11.3f%10i%15.3f\n\n',tbl{3,2},tbl{3,3},tbl{3,4});
-    fprintf(fid,'Total         %11.3f%10i\n\n',tbl{4,2},tbl{4,3});
-    fprintf(fid,'---------------------------------------------------------------------------\n\n');
-        
-    c=multcompare(stats);
-    fprintf(fid,'low-med: p=%.5f\n', c(1,6));
-    fprintf(fid,'low-high: p=%.5f\n', c(2,6));
-    fprintf(fid,'med-high: p=%.5f\n', c(3,6));
-    
-    % congruence conditions (pial)
-    [p,h,stats]=signrank(cond_results.pial_trials_woi('congruent'), cond_results.pial_trials_woi('incongruent'));
-    stat_str=sprintf('congruent (pial) - incongruent (pial): W=%.3f, p=%.5f\n\n', stats.signedrank, p);
-    disp(stat_str);
-    fprintf(fid, stat_str);
-
-    % congruence conditions (wm)
-    [p,h,stats]=signrank(cond_results.wm_trials_woi('congruent'), cond_results.wm_trials_woi('incongruent'));
-    stat_str=sprintf('congruent (wm) - incongruent (wm): W=%.3f, p=%.5f\n\n', stats.signedrank, p);
-    disp(stat_str);
-    fprintf(fid, stat_str);
-
-    fclose(fid);
+    title('white');     
 end

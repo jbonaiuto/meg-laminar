@@ -1,7 +1,8 @@
 function export_condition_results(subjects, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding','inv_type','EBB',...
+defaults = struct('data_dir','d:/pred_coding/derivatives/spm12',...
+    'surf_dir', 'D:/pred_coding/derivatives/freesurfer','inv_type','EBB',...
     'patch_size',0.4,'thresh_percentile',80, 'roi_type','mean',...
     'recompute', false, 'recompute_roi',false, 'correct_only', true);  %define default values
 params = struct(varargin{:});
@@ -16,9 +17,7 @@ spm('defaults','eeg');
 coherence_conditions={'low','med','high'};
 congruence_conditions={'congruent','incongruent'};
 
-out_dir=fullfile(params.data_dir, 'derivatives','spm12');
-
-fid=fopen(fullfile(out_dir, sprintf('%s_data.csv',contrast.comparison_name)),'w');
+fid=fopen(fullfile(params.data_dir, sprintf('%s_data.csv',contrast.comparison_name)),'w');
 fprintf(fid, 'Subject,Session,Trial,Congruence,Coherence,Power\n');
 for subj_idx=1:length(subjects)
     subj_info=subjects(subj_idx);
@@ -27,7 +26,7 @@ for subj_idx=1:length(subjects)
     for session_num=1:length(subj_info.sessions)
         disp(session_num);
         [pial_roi_trials,wm_roi_trials,pial_roi_bc_trials,wm_roi_bc_trials,times,freqs]=compute_condition_power(subj_info,...
-            session_num, contrast, 'data_dir',params.data_dir,...
+            session_num, contrast, 'data_dir',params.data_dir, 'surf_dir', params.surf_dir,...
             'inv_type', params.inv_type, 'patch_size', params.patch_size,...
             'thresh_percentile', params.thresh_percentile,'roi_type',params.roi_type,...
             'recompute', params.recompute,'recompute_roi', params.recompute_roi);
@@ -70,7 +69,7 @@ for subj_idx=1:length(subjects)
         end
 
         % Load coreg file - has condition labels
-        data_dir=fullfile(params.data_dir,'derivatives/spm12', subj_info.subj_id, sprintf('ses-%02d', session_num));
+        data_dir=fullfile(params.data_dir,subj_info.subj_id, sprintf('ses-%02d', session_num));
         data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', contrast.zero_event, session_num));
         
         foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)],...
