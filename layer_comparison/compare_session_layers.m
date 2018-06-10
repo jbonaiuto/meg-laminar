@@ -1,8 +1,7 @@
 function compare_session_layers(subj_info, session_num, contrast, foi_dir, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding/derivatives/spm12', 'save_results', true,...
-    'inv_type','EBB','patch_size', 0.4, 'surf_dir','D:/pred_coding/derivatives/freesurfer');  %define default values
+defaults = struct('surf_dir','/data/meg_laminar/derivatives/freesurfer');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -10,19 +9,13 @@ for f = fieldnames(defaults)',
     end
 end
 
+surf_dir=fullfile(params.surf_dir, subj_info.subj_id);
+
 % Get map from white matter to pial surface
-orig_white_mesh=fullfile(params.surf_dir,...
-    subj_info.subj_id,...
-    'white.hires.deformed.surf.gii');
-white_mesh=fullfile(params.surf_dir,...
-    subj_info.subj_id,...
-    'ds_white.hires.deformed.surf.gii');
-orig_pial_mesh=fullfile(params.surf_dir,...
-    subj_info.subj_id,...
-    'pial.hires.deformed.surf.gii');
-pial_mesh=fullfile(params.surf_dir,...
-    subj_info.subj_id,...
-    'ds_pial.hires.deformed.surf.gii');
+orig_white_mesh=fullfile(surf_dir,'white.hires.deformed.surf.gii');
+white_mesh=fullfile(surf_dir,'ds_white.hires.deformed.surf.gii');
+orig_pial_mesh=fullfile(surf_dir,'pial.hires.deformed.surf.gii');
+pial_mesh=fullfile(surf_dir,'ds_pial.hires.deformed.surf.gii');
 
 pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
     'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);

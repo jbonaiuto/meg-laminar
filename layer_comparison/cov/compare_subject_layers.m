@@ -1,9 +1,8 @@
-function compare_subject_layers(subj_info, contrast, idx, varargin)
+function compare_subject_layers(subj_info, contrast, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', '/data/meg_laminar/derivatives/spm12',...
-    'inv_type','EBB','patch_size', 5.0, 'surf_dir','/data/meg_laminar/derivatives/freesurfer',...
-    'shift_magnitude', 10);  %define default values
+    'inv_type','EBB','patch_size', 5.0, 'surf_dir','/data/meg_laminar/derivatives/freesurfer');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -25,13 +24,13 @@ nvertices=length(pial_white_map);
 
 pial_diff=[];
 white_diff=[];
-
-for session_num=1:length(subj_info.sessions)
+    
+for session_num=subj_info.sessions
     foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
         sprintf('ses-%02d',session_num), 'grey_coreg', params.inv_type,...
         ['p' num2str(params.patch_size)], contrast.zero_event,...
         ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
-        'coregerr', num2str(params.shift_magnitude), num2str(idx));
+        'cov');
 
     session_pial_diff=gifti(fullfile(foi_dir, sprintf('pial.%s.diff.gii', contrast.comparison_name)));
     ntrials=size(session_pial_diff.cdata,2);
@@ -46,7 +45,7 @@ end
 foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
     'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)],...
     contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
-    'coregerr', num2str(params.shift_magnitude), num2str(idx));
+    'cov');
 mkdir(foi_dir);
 
 % Save pial/wm diff

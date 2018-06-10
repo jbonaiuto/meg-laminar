@@ -1,6 +1,6 @@
 library("doBy")
 
-data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/dots_alpha/subjects_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/against_shuffled/dots_alpha/subjects_data.csv',header=TRUE,sep=',')
 data$Subject<-as.factor(data$Subject)
 agg_data<-summaryBy(Pial.White ~ Subject + ROIType, FUN=mean, data=data, keep.names=TRUE)
 
@@ -18,7 +18,7 @@ results<-wilcox.test(agg_data$Pial.White[agg_data$ROIType=='Anat'],mu=0,alternat
 print(results)
 
 
-data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/dots_gamma/subjects_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/against_shuffled/dots_gamma/subjects_data.csv',header=TRUE,sep=',')
 data$Subject<-as.factor(data$Subject)
 agg_data<-summaryBy(Pial.White ~ Subject + ROIType, FUN=mean, data=data, keep.names=TRUE)
 
@@ -36,7 +36,7 @@ results<-wilcox.test(agg_data$Pial.White[agg_data$ROIType=='Anat'],mu=0,alternat
 print(results)
 
 
-data<-read.csv(file=/home/bonaiuto/meg_laminar/derivatives/spm12/instr_gamma/subjects_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/against_shuffled/instr_gamma/subjects_data.csv',header=TRUE,sep=',')
 data$Subject<-as.factor(data$Subject)
 agg_data<-summaryBy(Pial.White ~ Subject + ROIType, FUN=mean, data=data, keep.names=TRUE)
 
@@ -54,7 +54,7 @@ results<-wilcox.test(agg_data$Pial.White[agg_data$ROIType=='Anat'],mu=0,alternat
 print(results)
 
 
-data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/dots_beta_erd/subjects_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/against_shuffled/dots_beta_erd/subjects_data.csv',header=TRUE,sep=',')
 data$Subject<-as.factor(data$Subject)
 agg_data<-summaryBy(Pial.White ~ Subject + ROIType, FUN=mean, data=data, keep.names=TRUE)
 
@@ -72,7 +72,7 @@ results<-wilcox.test(agg_data$Pial.White[agg_data$ROIType=='Anat'],mu=0,alternat
 print(results)
 
 
-data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/resp_beta_rebound/subjects_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/against_shuffled/resp_beta_rebound/subjects_data.csv',header=TRUE,sep=',')
 data$Subject<-as.factor(data$Subject)
 agg_data<-summaryBy(Pial.White ~ Subject + ROIType, FUN=mean, data=data, keep.names=TRUE)
 
@@ -90,7 +90,7 @@ results<-wilcox.test(agg_data$Pial.White[agg_data$ROIType=='Anat'],mu=0,alternat
 print(results)
 
 
-data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/resp_mrgs/subjects_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/against_shuffled/resp_mrgs/subjects_data.csv',header=TRUE,sep=',')
 data$Subject<-as.factor(data$Subject)
 agg_data<-summaryBy(Pial.White ~ Subject + ROIType, FUN=mean, data=data, keep.names=TRUE)
 
@@ -107,3 +107,4 @@ print('Anatomical')
 results<-wilcox.test(agg_data$Pial.White[agg_data$ROIType=='Anat'],mu=0,alternative='two.sided')
 print(results)
 
+sink()

@@ -34,14 +34,12 @@ foi_dir=fullfile(grey_coreg_dir, params.inv_type,...
 
 if params.extract
     extract_inversion_source(subj_info, session_num, contrast,...
-        foi_dir, 'data_dir', params.data_dir, 'inv_type', params.inv_type,...
-        'patch_size',params.patch_size,'surf_dir',params.surf_dir);
+        foi_dir);
 end
 
 if params.compare
     compare_session_layers(subj_info, session_num, contrast, ...
-        foi_dir, 'data_dir', params.data_dir, 'inv_type',params.inv_type,...
-        'patch_size', params.patch_size, 'surf_dir',params.surf_dir);
+        foi_dir, 'surf_dir',params.surf_dir);
 end
 rmdir(fullfile(foi_dir, sprintf('t%d_%d', contrast.baseline_woi(1), contrast.baseline_woi(2))),'s');
 rmdir(fullfile(foi_dir, sprintf('t%d_%d', contrast.comparison_woi(1), contrast.comparison_woi(2))),'s');

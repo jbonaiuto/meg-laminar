@@ -1,8 +1,8 @@
 function plot_classification_results_subjects(subjects, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding',...
-    'surf_dir', 'D:/pred_coding/surf','inv_type','EBB',...
+defaults = struct('data_dir','d:/meg_laminar/derivatives/spm12',...
+    'surf_dir', 'd:/meg_laminar/derivatives/freesurfer','inv_type','EBB',...
     'patch_size',0.4,'recompute_roi',false,'iterations',10);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
@@ -10,8 +10,7 @@ for f = fieldnames(defaults)',
         params.(f{1}) = defaults.(f{1});
     end
 end
-addpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
-
+addpath('D:\meg_laminar\layer_comparison');
 spm('defaults','eeg');
 
 subject_whole_brain_tvals=zeros(length(subjects), params.iterations);
@@ -29,13 +28,14 @@ end
 subj_dofs=zeros(length(subjects), params.iterations);
 
 for subj_idx=1:length(subjects)
-    subj_info=subjects(subj_idx);
-    orig_white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','white.hires.deformed.surf.gii');
-    white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed.surf.gii');
-    white_inflated=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed_inflated.surf.gii');
-    orig_pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','pial.hires.deformed.surf.gii');
-    pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed.surf.gii');
-    pial_inflated=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed_inflated.surf.gii');
+    surf_dir=fullfile(params.surf_dir, subj_info.subj_id);
+    orig_white_mesh=fullfile(surf_dir,'white.hires.deformed.surf.gii');
+    white_mesh=fullfile(surf_dir,'ds_white.hires.deformed.surf.gii');
+    white_inflated=fullfile(surf_dir,'ds_white.hires.deformed_inflated.surf.gii');
+    orig_pial_mesh=fullfile(surf_dir,'pial.hires.deformed.surf.gii');
+    pial_mesh=fullfile(surf_dir,'ds_pial.hires.deformed.surf.gii');
+    pial_inflated=fullfile(surf_dir,'ds_pial.hires.deformed_inflated.surf.gii');
+
     pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
         'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);
     white_pial_map=map_white_to_pial(white_mesh, pial_mesh, 'mapType', 'link',...
@@ -43,14 +43,14 @@ for subj_idx=1:length(subjects)
     pial_hemisphere_map=get_hemisphere_map(pial_mesh, orig_pial_mesh);
     white_hemisphere_map=get_hemisphere_map(white_mesh, orig_white_mesh);
     
-    foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-            num2str(subj_info.sessions(1)), 'grey_coreg', params.inv_type,....
+    foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
+            sprintf('ses-%02d',subj_info.sessions(1)), 'grey_coreg', params.inv_type,....
             ['p' num2str(params.patch_size)], contrast.zero_event,...
             ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
     lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, subj_info.sessions(1)));    
     
     for shuf_idx=1:params.iterations
-        foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
+        foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
                 'grey_coreg', params.inv_type,....
                 ['p' num2str(params.patch_size)], contrast.zero_event,...
                 ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
@@ -135,11 +135,4 @@ xt=get(gca,'XTick');
 set(gca,'FontSize',20);
 set(gca,'Fontname','Arial');
 
-plot_dir=fullfile('C:\Users\jbonai\Dropbox\meg\pred_coding\plots\layer_comparison',...
-        contrast.comparison_name);
-mkdir(plot_dir);
-saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_shuffled.png', contrast.comparison_name)), 'png');
-saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_shuffled.eps', contrast.comparison_name)), 'eps');
-saveas(fig, fullfile(plot_dir, sprintf('%s_subjects_shuffled.fig', contrast.comparison_name)), 'fig');
-
-rmpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
+rmpath('D:\meg_laminar\layer_comparison');

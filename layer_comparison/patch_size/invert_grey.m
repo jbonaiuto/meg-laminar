@@ -1,8 +1,9 @@
 function invert_grey(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'inv_type', 'EBB',...
-    'patch_size',5, 'surf_dir', '', 'mri_dir', '', 'init', true,...
+defaults = struct('data_dir', '/data/meg_laminar/derivatives/spm12', 'inv_type', 'EBB',...
+    'patch_size',5, 'surf_dir', '/data/meg_laminar/derivatives/freesurfer',...
+    'mri_dir', '/data/meg_laminar', 'init', true,...
     'coreg', true, 'invert', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
@@ -10,14 +11,8 @@ for f = fieldnames(defaults)',
         params.(f{1}) = defaults.(f{1});
     end
 end
-if isempty(params.surf_dir)
-    params.surf_dir=fullfile(params.data_dir,'surf');
-end
-if isempty(params.mri_dir)
-    params.mri_dir=fullfile(params.data_dir,'mri');
-end
 
-data_dir=fullfile(params.data_dir,'analysis', subj_info.subj_id, num2str(session_num));
+data_dir=fullfile(params.data_dir, subj_info.subj_id, sprintf('ses-%02d',session_num));
 data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', contrast.zero_event, session_num));
 
 % Create directory for inversion results
@@ -86,8 +81,8 @@ if params.coreg
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {bc_file_name};
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = 'grey';
-    matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.mri_dir,[subj_info.subj_id subj_info.birth_date], [subj_info.headcast_t1 ',1'])};
-    matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.cortex = {fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed-ds_pial.hires.deformed.surf.gii')};
+    matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.mri_dir,subj_info.subj_id,'anat',[subj_info.headcast_t1 ',1'])};
+    matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.cortex = {fullfile(params.surf_dir,subj_info.subj_id,'ds_white.hires.deformed-ds_pial.hires.deformed.surf.gii')};
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.iskull = {''};
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.oskull = {''};
     matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.scalp = {''};

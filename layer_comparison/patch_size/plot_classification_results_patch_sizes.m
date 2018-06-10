@@ -1,8 +1,8 @@
-function plot_classification_results_patch_sizes(subj_info, contrasts, roi_type, varargin)
+function plot_classification_results_patch_sizes(subj_info, contrasts, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding',...
-    'surf_dir', 'D:/pred_coding/surf','inv_type','EBB',...
+defaults = struct('data_dir','d:/meg_laminar/derivatives/spm12',...
+    'surf_dir', 'd:/meg_laminar/derivatives/freesurfer','inv_type','EBB',...
     'patch_size',0.4,'recompute_roi',false, 'whole_brain', false,...
     'thresh_percentile', 80);  %define default values
 params = struct(varargin{:});
@@ -13,21 +13,21 @@ for f = fieldnames(defaults)',
 end
 
 spm('defaults','eeg');
-addpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
+addpath('D:\meg_laminar\layer_comparison');
 
-patch_sizes=[2.5 5 10 20];
+patch_sizes=[1 3 5 10 20 40];
 tvals=zeros(length(contrasts),length(patch_sizes));
-mean_f=zeros(length(contrasts),length(patch_sizes));
-mean_pial_f=zeros(length(contrasts),length(patch_sizes));
-mean_white_f=zeros(length(contrasts),length(patch_sizes));
+f={};
 contrast_order=[3 4 6 5 1 2];
 
-orig_white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','white.hires.deformed.surf.gii');
-white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed.surf.gii');
-white_inflated=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed_inflated.surf.gii');
-orig_pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','pial.hires.deformed.surf.gii');
-pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed.surf.gii');
-pial_inflated=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed_inflated.surf.gii');
+surf_dir=fullfile(params.surf_dir, subj_info.subj_id);
+orig_white_mesh=fullfile(surf_dir,'white.hires.deformed.surf.gii');
+white_mesh=fullfile(surf_dir,'ds_white.hires.deformed.surf.gii');
+white_inflated=fullfile(surf_dir,'ds_white.hires.deformed_inflated.surf.gii');
+orig_pial_mesh=fullfile(surf_dir,'pial.hires.deformed.surf.gii');
+pial_mesh=fullfile(surf_dir,'ds_pial.hires.deformed.surf.gii');
+pial_inflated=fullfile(surf_dir,'ds_pial.hires.deformed_inflated.surf.gii');
+
 pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
     'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);
 white_pial_map=map_white_to_pial(white_mesh, pial_mesh, 'mapType', 'link',...
@@ -54,16 +54,18 @@ for c_idx=1:length(contrast_order)
         hemisphere=contrast.hemisphere;
     end    
     
+    contrast_f=zeros(length(patch_sizes),length(subj_info.sessions));
+    
     for p_idx=1:length(patch_sizes)
         patch_size=patch_sizes(p_idx);
         
-        foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-                num2str(subj_info.sessions(1)), 'grey_coreg', params.inv_type,....
+        foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
+                sprintf('ses-%02d',subj_info.sessions(1)), 'grey_coreg', params.inv_type,....
                 ['p' num2str(patch_size)], contrast.zero_event,...
                 ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
         lfn_filename=fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, subj_info.sessions(1)));    
 
-        foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
+        foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
                 'grey_coreg', params.inv_type,....
                 ['p' num2str(patch_size)], contrast.zero_event,...
                 ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
@@ -83,47 +85,18 @@ for c_idx=1:length(contrast_order)
         disp(sprintf('%s, p=%.2f, t=%.3f',contrast.comparison_name,patch_size,tstat));
         tvals(c_idx,p_idx)=tstat;        
         
-        f=zeros(1,length(subj_info.sessions));
-        for session_idx=1:length(subj_info.sessions)
-            session_num=subj_info.sessions(session_idx);
-            foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-                num2str(session_num), 'grey_coreg', params.inv_type,....
+        for session_num=1:length(subj_info.sessions)
+            foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
+                sprintf('ses-%02d',session_num), 'grey_coreg', params.inv_type,....
                 ['p' num2str(patch_size)], contrast.zero_event,...
                 ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
             load(fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, session_num)));
-            f(session_idx)=D.other.inv{1}.inverse.F;
+            contrast_f(p_idx,session_idx)=D.other.inv{1}.inverse.F;
         end
-        mean_f(c_idx,p_idx)=mean(f);
         
-        f=zeros(1,length(subj_info.sessions));
-        for session_idx=1:length(subj_info.sessions)
-            session_num=subj_info.sessions(session_idx);
-            foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-                num2str(session_num), 'pial_coreg', params.inv_type,....
-                ['p' num2str(patch_size)], contrast.zero_event,...
-                ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
-            load(fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, session_num)));
-            f(session_idx)=D.other.inv{1}.inverse.F;
-        end
-        mean_pial_f(c_idx,p_idx)=mean(f);
-        
-        f=zeros(1,length(subj_info.sessions));
-        for session_idx=1:length(subj_info.sessions)
-            session_num=subj_info.sessions(session_idx);
-            foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-                num2str(session_num), 'white_coreg', params.inv_type,....
-                ['p' num2str(patch_size)], contrast.zero_event,...
-                ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
-            load(fullfile(foi_dir, sprintf('br%s_%d.mat',subj_info.subj_id, session_num)));
-            f(session_idx)=D.other.inv{1}.inverse.F;
-        end
-        mean_white_f(c_idx,p_idx)=mean(f);
     end
+    f{c_idx}=contrast_f;
 end
-
-plot_dir=fullfile('C:\Users\jbonai\Dropbox\meg\pred_coding\plots\layer_comparison\patch_size');
-mkdir(plot_dir);
-
 
 fig=figure('Position',[1 1 1200 600],'PaperUnits','points',...
     'PaperPosition',[1 1 600 300],'PaperPositionMode','manual');
@@ -137,14 +110,11 @@ for c_idx=1:length(contrast_order)
     contrast_names{c_idx}=contrast.comparison_name;
     left=c_idx-.5*contrast_width;
     centers=left+.5*bar_width+([1:length(patch_sizes)]-1)*(bar_width+gap_width);
-    contrast_mean_f=mean_f(c_idx,:);
-    plot(centers,contrast_mean_f-mean(contrast_mean_f),'k','LineWidth',2);
-    contrast_mean_f=mean_pial_f(c_idx,:);
-    plot(centers,contrast_mean_f-mean(contrast_mean_f),'b','LineWidth',2);
-    contrast_mean_f=mean_white_f(c_idx,:);
-    plot(centers,contrast_mean_f-mean(contrast_mean_f),'r','LineWidth',2);
+    
+    contrast_f=f{c_idx};
+    f_diff=contrast_f-repmat(min(contrast_f,[],1),length(patch_sizes),1);
+    plot(centers,mean(f_diff,2),'k','LineWidth',2);
 end
-legend('Grey','Pial','White');
 set(gca,'XTick',1:length(contrasts));
 set(gca,'XTickLabel',contrast_names);
 ylabel('D F','Fontsize',24,'Fontname','Arial');
@@ -153,10 +123,6 @@ yl=ylim;
 ylim([-max(abs(yl)) max(abs(yl))]);
 set(gca,'FontSize',20);
 set(gca,'Fontname','Arial');
-
-saveas(fig, fullfile(plot_dir, sprintf('%s_%s_patch_size_F.png', subj_info.subj_id, roi_type)), 'png');
-saveas(fig, fullfile(plot_dir, sprintf('%s_%s_patch_size_F.eps', subj_info.subj_id, roi_type)), 'eps');
-saveas(fig, fullfile(plot_dir, sprintf('%s_%s_patch_size_F.fig', subj_info.subj_id, roi_type)), 'fig');
 
 
 fig=figure('Position',[1 1 1200 600],'PaperUnits','points',...
@@ -173,7 +139,7 @@ plot([1-.5 length(contrasts)+.5],[t_thresh t_thresh],'k--','LineWidth',2);
 plot([1-.5 length(contrasts)+.5],[-t_thresh -t_thresh],'k--','LineWidth',2);
 
     
-colors=[178,24,43; 214,96,77; 244,165,130; 253,219,199; 209,229,240; 146,197,222; 67,147,195; 33,102,172]./255;
+colors=[247,247,247; 217,217,217; 189,189,189; 150,150,150; 99,99,99; 37,37,37]./255;
 
 for c_idx=1:length(contrast_order)
     contrast=contrasts(contrast_order(c_idx));
@@ -183,10 +149,7 @@ for c_idx=1:length(contrast_order)
     for p_idx=1:length(patch_sizes)
         center=left+.5*bar_width+(p_idx-1)*(bar_width+gap_width);
         tval=tvals(c_idx,p_idx);
-        face_color=colors(p_idx+4,:);
-        if tval<0
-            face_color=colors(p_idx,:);
-        end
+        face_color=colors(p_idx,:);
         bar(center, tval, bar_width, 'FaceColor', face_color,'EdgeColor','none');
     end    
 end
@@ -199,8 +162,4 @@ ylim([-max(abs(yl)) max(abs(yl))]);
 set(gca,'FontSize',20);
 set(gca,'Fontname','Arial');
 
-saveas(fig, fullfile(plot_dir, sprintf('%s_%s_patch_size.png', subj_info.subj_id, roi_type)), 'png');
-saveas(fig, fullfile(plot_dir, sprintf('%s_%s_patch_size.eps', subj_info.subj_id, roi_type)), 'eps');
-saveas(fig, fullfile(plot_dir, sprintf('%s_%s_patch_size.fig', subj_info.subj_id, roi_type)), 'fig');
-
-rmpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
+rmpath('D:\meg_laminar\layer_comparison');

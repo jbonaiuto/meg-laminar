@@ -1,8 +1,9 @@
 function invert_grey(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', 'd:/pred_coding/derivatives/spm12', 'inv_type', 'EBB',...
-    'patch_size',0.4, 'surf_dir', 'd:/pred_coding/derivatives/freesurfer', 'mri_dir', 'd:/pred_coding/', 'init', true,...
+defaults = struct('data_dir', '/data/meg_laminar/derivatives/spm12', 'inv_type', 'EBB',...
+    'patch_size',0.4, 'surf_dir', '/data/meg_laminar/derivatives/freesurfer',...
+    'mri_dir', '/data/meg_laminar/', 'init', true,...
     'coreg', true, 'invert', true);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
@@ -11,7 +12,7 @@ for f = fieldnames(defaults)',
     end
 end
 
-data_dir=fullfile(params.data_dir,subj_info.subj_id, sprintf('ses-0%d',session_num));
+data_dir=fullfile(params.data_dir,subj_info.subj_id, sprintf('ses-%02d',session_num));
 data_file_name=fullfile(data_dir, sprintf('rc%s_Tafdf%d.mat', contrast.zero_event, session_num));
 
 % Create directory for inversion results

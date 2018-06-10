@@ -1,7 +1,8 @@
 function [diff_limits, pial_wm_diff_limits, t_limits, pial_wm_t_limits]=plot_comparison(subj_info, lfn_filename, foi_dir, comparison_name, view, varargin)
 
 % Parse inputs
-defaults = struct('surf_dir', 'd:/pred_coding/derivatives/freesurfer',...
+defaults = struct('data_dir','d:/meg_laminar/derivatives/spm12',...
+    'surf_dir', 'd:/meg_laminar/derivatives/freesurfer',...
     'inv_type','EBB','patch_size',0.4,'output_file','','output_format','png',...
     'threshold',0,'thresh_type','lower','pial_mask',[],'wm_mask',[],'mask',[],...
     't_limits', [], 'diff_limits', [], 'pial_wm_t_limits', [], 'pial_wm_diff_limits', [],...
@@ -12,14 +13,16 @@ for f = fieldnames(defaults)',
         params.(f{1}) = defaults.(f{1});
     end
 end
+
 % Load surface files
-orig_white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'white.hires.deformed.surf.gii');
-white_mesh=fullfile(params.surf_dir,subj_info.subj_id,'ds_white.hires.deformed.surf.gii');
-white_inflated_mesh=gifti(fullfile(params.surf_dir,subj_info.subj_id,'ds_white.hires.deformed_inflated.surf.gii'));
-orig_pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'pial.hires.deformed.surf.gii');
-pial_mesh=fullfile(params.surf_dir,subj_info.subj_id,'ds_pial.hires.deformed.surf.gii');
-pial_inflated_mesh=gifti(fullfile(params.surf_dir,subj_info.subj_id,'ds_pial.hires.deformed_inflated.surf.gii'));
-    
+surf_dir=fullfile(params.surf_dir, subj_info.subj_id);
+orig_white_mesh=fullfile(surf_dir,'white.hires.deformed.surf.gii');
+white_mesh=fullfile(surf_dir,'ds_white.hires.deformed.surf.gii');
+white_inflated_mesh=gifti(fullfile(surf_dir,'ds_white.hires.deformed_inflated.surf.gii'));
+orig_pial_mesh=fullfile(surf_dir,'pial.hires.deformed.surf.gii');
+pial_mesh=fullfile(surf_dir,'ds_pial.hires.deformed.surf.gii');
+pial_inflated_mesh=gifti(fullfile(surf_dir,'ds_pial.hires.deformed_inflated.surf.gii'));
+
 pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
     'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);
 
@@ -85,10 +88,6 @@ end
 if length(params.pial_wm_diff_limits)==0
     params.pial_wm_diff_limits=get_metric_limits(mean(pial_wm_diff_data(params.mask,:),2),...
         'clip_vals', true, 'symmetric', true);
-end
-if length(params.pial_wm_diff_limits)==0
-    params.pial_wm_diff_limits=get_metric_limits(mean(pial_wm_diff_data(params.mask,:),2),...
-        'clip_vals', false, 'symmetric', true);
 end
 diff_limits=params.diff_limits;
 pial_wm_diff_limits=params.pial_wm_diff_limits;

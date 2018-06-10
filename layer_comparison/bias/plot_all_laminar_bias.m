@@ -1,11 +1,11 @@
-function plot_all_laminar_bias(subjects, contrasts, sub_dir, varargin)
+function plot_all_laminar_bias(subjects, contrasts, varargin)
 
 % Parse inputs
-defaults = struct('data_dir','d:/pred_coding',...
-    'surf_dir', 'D:/pred_coding/surf','inv_type','EBB',...
+defaults = struct('data_dir','d:/meg_laminar/derivatives/spm12',...
+    'surf_dir', 'D:/meg_laminar/derivatives/freesurfer','inv_type','EBB',...
     'patch_size',0.4,'thresh_percentile',80,'roi_type','mean',...
     'whole_brain', false, 'plot_ext','',...
-    'recompute_roi',false, 'ylim', []);  %define default values
+    'recompute_roi',false, 'ylim', [], 'perc', false, 'perc_limit', 0);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -14,16 +14,14 @@ for f = fieldnames(defaults)',
 end
 
 spm('defaults','eeg');
-addpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
-
-plot_dir=fullfile('C:\Users\jbonai\Dropbox\meg\pred_coding\plots\layer_comparison',sub_dir);
-mkdir(plot_dir);
+addpath('D:\meg_laminar\layer_comparison');
 
 contrast_order=[3 4 6 5 1 2];
 colors=[231 138 195;102 194 165;102 194 165;231 138 195;231 138 195;102 194 165]./255;
 styles={'-','-','-','--','--','--'};
 
-all_pial_wm_diff_data={};
+all_lfn_pial_wm_diff_data={};
+all_depth_pial_wm_diff_data={};
 all_lfn_diff={};
 all_depth_diff={};
 
@@ -38,14 +36,15 @@ for c_idx=1:length(contrast_order)
             thresh_type='upper';
     end
 
-    c_all_pial_wm_diff_data=[];
+    c_all_depth_pial_wm_diff_data=[];
+    c_all_lfn_pial_wm_diff_data=[];
     c_all_lfn_diff=[];
     c_all_depth_diff=[];
 
 
     for s_idx=1:length(subjects)
         subj_info=subjects(s_idx);
-        subj_surf_dir=fullfile(params.surf_dir,sprintf('%s%s-synth', subj_info.subj_id, subj_info.birth_date),'surf');
+        subj_surf_dir=fullfile(params.surf_dir,subj_info.subj_id);
 
         orig_white_mesh=fullfile(subj_surf_dir,'white.hires.deformed.surf.gii');
         white_mesh=fullfile(subj_surf_dir,'ds_white.hires.deformed.surf.gii');
@@ -67,8 +66,8 @@ for c_idx=1:length(contrast_order)
         if strcmp(subj_info.subj_id,'nc')
             first_session=3;
         end
-        foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-            num2str(first_session), 'grey_coreg', params.inv_type,....
+        foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
+            sprintf('ses-%02d',first_session), 'grey_coreg', params.inv_type,....
             ['p' num2str(params.patch_size)], contrast.zero_event,...
             ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
 
@@ -88,6 +87,9 @@ for c_idx=1:length(contrast_order)
         wm_lfn=spm_mesh_smooth(wm, wm_lfn, 20);
         mapped_wm_lfn=wm_lfn(pial_white_map);
         lfn_diff=pial_lfn-mapped_wm_lfn;
+        if params.perc
+            lfn_diff=lfn_diff./pial_lfn.*100.0;
+        end
 
         pial_metric_mask=find(pial_lfn>22);
         mapped_wm_metric_mask=find(mapped_wm_lfn>19);
@@ -99,7 +101,7 @@ for c_idx=1:length(contrast_order)
             hemisphere='';
             region='';
         end
-        foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
+        foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
                 'grey_coreg', params.inv_type,....
                 ['p' num2str(params.patch_size)], contrast.zero_event,...
                 ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))]);
@@ -113,7 +115,7 @@ for c_idx=1:length(contrast_order)
 
         pial_wm_diff=gifti(fullfile(foi_dir,['pial-white.' contrast.comparison_name '.diff.gii']));
         pial_wm_diff_data=pial_wm_diff.cdata(:,:);
-        pial_wm_diff_data=mean(pial_wm_diff_data,2)./std(pial_wm_diff_data,[],2);
+        pial_wm_diff_cv=mean(pial_wm_diff_data,2)./std(pial_wm_diff_data,[],2);
 
         pial_depth_fname=fullfile(subj_surf_dir,'ds_pial_sulcal_depth.mat');
         wm_depth_fname=fullfile(subj_surf_dir,'ds_white_sulcal_depth.mat');
@@ -129,12 +131,29 @@ for c_idx=1:length(contrast_order)
         end
         mapped_wm_depth=wm_depth(pial_white_map);
         depth_diff=pial_depth-mapped_wm_depth;
+        if params.perc
+            depth_diff=depth_diff./mapped_wm_depth.*100.0;
+        end
 
-        c_all_pial_wm_diff_data(end+1:end+length(mask))=pial_wm_diff_data(mask);
-        c_all_lfn_diff(end+1:end+length(mask))=lfn_diff(mask);
-        c_all_depth_diff(end+1:end+length(mask))=depth_diff(mask);
+         % Add depth and LFN to mask
+        if params.perc && params.perc_limit>0
+            depth_mask=intersect(mask, find(abs(depth_diff)<=params.perc_limit));    
+            c_all_depth_pial_wm_diff_data(end+1:end+length(depth_mask))=pial_wm_diff_cv(depth_mask);
+            c_all_depth_diff(end+1:end+length(depth_mask))=depth_diff(depth_mask);
+            
+            lfn_mask=intersect(mask, find(abs(lfn_diff)<=params.perc_limit));    
+            c_all_lfn_pial_wm_diff_data(end+1:end+length(lfn_mask))=pial_wm_diff_cv(lfn_mask);
+            c_all_lfn_diff(end+1:end+length(lfn_mask))=lfn_diff(lfn_mask);
+        else
+            c_all_depth_pial_wm_diff_data(end+1:end+length(mask))=pial_wm_diff_cv(mask);
+            c_all_depth_diff(end+1:end+length(mask))=depth_diff(mask);
+            
+            c_all_lfn_pial_wm_diff_data(end+1:end+length(mask))=pial_wm_diff_cv(mask);
+            c_all_lfn_diff(end+1:end+length(mask))=lfn_diff(mask);
+        end
     end
-    all_pial_wm_diff_data{c_idx}=c_all_pial_wm_diff_data;
+    all_depth_pial_wm_diff_data{c_idx}=c_all_depth_pial_wm_diff_data;
+    all_lfn_pial_wm_diff_data{c_idx}=c_all_lfn_pial_wm_diff_data;
     all_lfn_diff{c_idx}=c_all_lfn_diff;
     all_depth_diff{c_idx}=c_all_depth_diff;
 end
@@ -147,7 +166,7 @@ for c_idx=1:length(contrast_order)
     contrast_names{c_idx}=contrast.comparison_name;
     
     depth_diff=all_depth_diff{c_idx};
-    pial_wm_diff_data=all_pial_wm_diff_data{c_idx};
+    pial_wm_diff_data=all_depth_pial_wm_diff_data{c_idx};
     
     pPoly = polyfit(depth_diff, pial_wm_diff_data,1); % Linear fit of xdata vs ydata
     linePointsX = [min(depth_diff) max(depth_diff)]; % find left and right x values
@@ -158,7 +177,6 @@ legend(contrast_names);
 xlabel('Pial depth - WM depth','FontSize',14,'FontName','Arial');
 ylabel('CV(|Pial Power D| - |WM Power D|)','FontSize',14,'FontName','Arial');
 set(gca,'FontName','Arial');
-saveas(fig, fullfile(plot_dir, 'depth_diff.eps'), 'epsc');
 
 
 fig=figure();
@@ -169,7 +187,7 @@ for c_idx=1:length(contrast_order)
     contrast_names{c_idx}=contrast.comparison_name;
     
     lfn_diff=all_lfn_diff{c_idx};
-    pial_wm_diff_data=all_pial_wm_diff_data{c_idx};
+    pial_wm_diff_data=all_lfn_pial_wm_diff_data{c_idx};
     
     pPoly = polyfit(lfn_diff, pial_wm_diff_data,1); % Linear fit of xdata vs ydata
     linePointsX = [min(lfn_diff) max(lfn_diff)]; % find left and right x values
@@ -180,6 +198,5 @@ legend(contrast_names);
 xlabel('Pial LFN - WM LFN','FontSize',14,'FontName','Arial');
 ylabel('CV(|Pial Power D| - |WM Power D|)','FontSize',14,'FontName','Arial');
 set(gca,'FontName','Arial');
-saveas(fig, fullfile(plot_dir, 'lfn_diff.eps'), 'epsc');
 
-rmpath('D:\pred_coding\src\matlab\analysis\layer_comparison');
+rmpath('D:\meg_laminar\layer_comparison');

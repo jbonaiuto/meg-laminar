@@ -9,13 +9,9 @@ for f = fieldnames(defaults)',
     end
 end
 
-addpath('D:\meg_laminar\layer_comparison');
-
 for i=1:length(contrasts)
     contrast=contrasts(i);
-    compare_subject_layers(subj_info, contrast, ...
+    compare_subject_layers(subj_info, contrast,...
         'data_dir', params.data_dir, 'inv_type', params.inv_type, ...
-        'patch_size', params.patch_size, 'surf_dir', params.surf_dir)
+        'patch_size', params.patch_size, 'surf_dir', params.surf_dir);
 end        
-
-rmpath('D:\meg_laminar\layer_comparison');

@@ -1,23 +1,21 @@
 function compare_subject_layers(subj_info, contrast, shuff_idx, varargin)
 
 % Parse inputs
-defaults = struct('data_dir', '/data/pred_coding', 'save_results', true,...
-    'inv_type','EBB','patch_size', 5.0, 'surf_dir','');  %define default values
+defaults = struct('data_dir', '/data/meg_laminar/derivatives/spm12',...
+    'inv_type','EBB','patch_size', 5.0, 'surf_dir','/data/meg_laminar/derivatives/freesurfer');  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
         params.(f{1}) = defaults.(f{1});
     end
 end
-if length(params.surf_dir)==0
-    params.surf_dir=fullfile(params.data_dir,'surf');
-end
 
 % Get map from white matter to pial surface
-orig_white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','white.hires.deformed.surf.gii');
-white_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_white.hires.deformed.surf.gii');
-orig_pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','pial.hires.deformed.surf.gii');
-pial_mesh=fullfile(params.surf_dir,[subj_info.subj_id subj_info.birth_date '-synth'],'surf','ds_pial.hires.deformed.surf.gii');
+surf_dir=fullfile(params.surf_dir,subj_info.subj_id);
+orig_white_mesh=fullfile(surf_dir,'white.hires.deformed.surf.gii');
+white_mesh=fullfile(surf_dir,'ds_white.hires.deformed.surf.gii');
+orig_pial_mesh=fullfile(surf_dir,'pial.hires.deformed.surf.gii');
+pial_mesh=fullfile(surf_dir,'ds_pial.hires.deformed.surf.gii');
 
 pial_white_map=map_pial_to_white(white_mesh, pial_mesh, 'mapType', 'link',...
     'origPial', orig_pial_mesh, 'origWhite', orig_white_mesh);
@@ -26,10 +24,10 @@ nvertices=length(pial_white_map);
 
 pial_diff=[];
 white_diff=[];
-
-for session_num=subj_info.sessions
-    foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
-        num2str(session_num), 'grey_coreg', params.inv_type,...
+    
+for session_num=1:length(subj_info.sessions)
+    foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
+        sprintf('ses-%02d',session_num), 'grey_coreg', params.inv_type,...
         ['p' num2str(params.patch_size)], contrast.zero_event,...
         ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
         'shuffled', num2str(shuff_idx));
@@ -44,7 +42,7 @@ for session_num=subj_info.sessions
 end
 
 
-foi_dir=fullfile(params.data_dir, 'analysis', subj_info.subj_id,...
+foi_dir=fullfile(params.data_dir, subj_info.subj_id,...
     'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)],...
     contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
     'shuffled', num2str(shuff_idx));

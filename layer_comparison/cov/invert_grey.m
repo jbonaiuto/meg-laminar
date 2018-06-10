@@ -1,10 +1,10 @@
-function invert_grey(subj_info, session_num, contrast, shuffled_idx, varargin)
+function invert_grey(subj_info, session_num, contrast, varargin)
 
 % Parse inputs
 defaults = struct('data_dir', 'd:/meg_laminar/derivatives/spm12', 'inv_type', 'EBB',...
     'patch_size',0.4, 'surf_dir', 'd:/meg_laminar/derivatives/freesurfer',...
-    'mri_dir', 'd:/meg_laminar', 'init', true,...
-    'coreg', true, 'invert', true);  %define default values
+    'mri_dir', 'd:/meg_laminar/', 'init', true,...
+    'coreg', true, 'invert', true, 'shift_magnitude', 10);  %define default values
 params = struct(varargin{:});
 for f = fieldnames(defaults)',
     if ~isfield(params, f{1}),
@@ -21,11 +21,14 @@ bc_file_name=fullfile(origfoi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, ses
 
 foi_dir=fullfile(data_dir, 'grey_coreg', params.inv_type, ['p' num2str(params.patch_size)],...
     contrast.zero_event, ['f' num2str(contrast.foi(1)) '_' num2str(contrast.foi(2))],...
-    'shuffled',num2str(shuffled_idx));
+    'cov');
 if exist(foi_dir,'dir')~=7
     mkdir(foi_dir);
 end
-shuffled_bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session_num));
+cov_bc_file_name=fullfile(foi_dir, sprintf('br%s_%d.mat', subj_info.subj_id, session_num));
+
+cov_file_name=fullfile('C:\empty_room\mg05125_SofieSpatialMemory_20170921_01.ds',...
+    sprintf('cov_%d-%dHz.mat', contrast.foi(1), contrast.foi(2)));
 
 spm('defaults', 'EEG');
 spm_jobman('initcfg'); 
@@ -36,15 +39,15 @@ clear jobs
 matlabbatch={};
 batch_idx=1;
 matlabbatch{batch_idx}.spm.meeg.other.copy.D = {bc_file_name};
-matlabbatch{batch_idx}.spm.meeg.other.copy.outfile = shuffled_bc_file_name;
+matlabbatch{batch_idx}.spm.meeg.other.copy.outfile = cov_bc_file_name;
 batch_idx=batch_idx+1;
 
 % Coregister with surface
-matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {shuffled_bc_file_name};
+matlabbatch{batch_idx}.spm.meeg.source.headmodel.D = {cov_bc_file_name};
 matlabbatch{batch_idx}.spm.meeg.source.headmodel.val = 1;
 matlabbatch{batch_idx}.spm.meeg.source.headmodel.comment = 'grey';
-matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.mri_dir,subj_info.subj_id, 'anat', [subj_info.headcast_t1 ',1'])};
-matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.cortex = {fullfile(params.surf_dir, subj_info.subj_id,'ds_white.hires.deformed-ds_pial.hires.deformed.surf.gii')};
+matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.mri = {fullfile(params.mri_dir,subj_info.subj_id,'anat', [subj_info.headcast_t1 ',1'])};
+matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.cortex = {fullfile(params.surf_dir,subj_info.subj_id,'ds_white.hires.deformed-ds_pial.hires.deformed.surf.gii')};
 matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.iskull = {''};
 matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.oskull = {''};
 matlabbatch{batch_idx}.spm.meeg.source.headmodel.meshing.meshes.custom.scalp = {''};
@@ -61,13 +64,14 @@ matlabbatch{batch_idx}.spm.meeg.source.headmodel.forward.meg = 'Single Shell';
 batch_idx=batch_idx+1;
 
 % Run the inversion
-matlabbatch{batch_idx}.spm.meeg.source.invertiter.D = {shuffled_bc_file_name};
+matlabbatch{batch_idx}.spm.meeg.source.invertiter.D = {cov_bc_file_name};
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.val = 1;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.whatconditions.all = 1;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invfunc = 'Classic';
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.invtype = params.inv_type;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.woi = contrast.invwoi;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.foi = contrast.foi;
+matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.cov = {cov_file_name};
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.hanning = 0;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.isfixedpatch.randpatch.npatches = 512;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.isfixedpatch.randpatch.niter = 1;
@@ -80,6 +84,6 @@ matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.priors.space
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.restrict.locs = zeros(0, 3);
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.restrict.radius = 32;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.outinv = '';
-matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.shuffle = 1;
+matlabbatch{batch_idx}.spm.meeg.source.invertiter.isstandard.custom.shuffle = 0;
 matlabbatch{batch_idx}.spm.meeg.source.invertiter.modality = {'MEG'};
 spm_jobman('run',matlabbatch);
