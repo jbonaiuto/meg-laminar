@@ -5,9 +5,7 @@ library("lsmeans")
 library("car")
 library("Rmisc")
 
-sink('/home/bonaiuto/Dropbox/meg/pred_coding/plots/behavioral/stats.txt')
-
-data<-read.csv(file='/home/bonaiuto/Dropbox/meg/pred_coding/plots/behavioral/behavioral_data.csv',header=TRUE,sep=',')
+data<-read.csv(file='/home/bonaiuto/meg_laminar/derivatives/spm12/behav_data.csv',header=TRUE,sep=',')
 
 model <- glmer(Correct ~ Congruence*Coherence+(1|Subject), data = data, family=binomial, control = glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e6)))
 results<-Anova(model, type = 3)
